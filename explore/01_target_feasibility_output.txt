@@ -1,0 +1,16 @@
+(142193, 24) 2007-11-01 00:00:00 2017-06-25 00:00:00 49
+{'Sunshine': 47.7, 'Evaporation': 42.8, 'Cloud3pm': 40.2, 'Cloud9am': 37.7, 'Pressure9am': 9.9, 'Pressure3pm': 9.8, 'WindDir9am': 7.0, 'WindGustDir': 6.6, 'WindGustSpeed': 6.5, 'WindDir3pm': 2.7}
+RainTomorrow yes% 22.4
+consecutive next-day rows % 98.9
+Frost: MinT_next<=2          pos%=  5.5  usable_rows=140138
+Hot: MaxT_next>=35           pos%=  5.8  usable_rows=140299
+CoolChange: dMaxT<=-8        pos%=  3.3  usable_rows=140066
+Gale: Gust_next>=63          pos%=  6.5  usable_rows=131509
+Solar: Sun_next>=10h         pos%= 34.2  usable_rows=73874
+HeavyRain: Rain_next>=25     pos%=  2.0  usable_rows=140605
+Fire: FFDI_next>=25 (DF=8)   pos%=  5.9  usable_rows=136247
+Fire: FFDI_next>=12 (DF=8)   pos%= 20.3  usable_rows=136247
+season {'Aut': 26.3, 'Win': 25.3, 'Spr': 24.3, 'Sum': 24.1}
+rows/location min/max 1521 3418
+locations with Sunshine mostly present 28
+['Adelaide', 'Albany', 'Albury', 'AliceSprings', 'BadgerysCreek', 'Ballarat', 'Bendigo', 'Brisbane', 'Cairns', 'Canberra', 'Cobar', 'CoffsHarbour', 'Dartmoor', 'Darwin', 'GoldCoast', 'Hobart', 'Katherine', 'Launceston', 'Melbourne', 'MelbourneAirport', 'Mildura', 'Moree', 'MountGambier', 'MountGinini', 'Newcastle', 'Nhil', 'NorahHead', 'NorfolkIsland', 'Nuriootpa', 'PearceRAAF', 'Penrith', 'Perth', 'PerthAirport', 'Portland', 'Richmond', 'Sale', 'SalmonGums', 'Sydney', 'SydneyAirport', 'Townsville', 'Tuggeranong', 'Uluru', 'WaggaWagga', 'Walpole', 'Watsonia', 'Williamtown', 'Witchcliffe', 'Wollongong', 'Woomera']

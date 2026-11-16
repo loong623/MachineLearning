@@ -1,0 +1,15 @@
+# DSAA2011 Task A - exact package versions used to run project_XX_TaskA.ipynb
+# Tested with Python 3.10.12.  Install:  pip install -r requirements_XX_TaskA.txt
+numpy==2.2.6
+pandas==2.3.3
+scipy==1.15.3
+scikit-learn==1.7.2
+matplotlib==3.10.9
+seaborn==0.13.2
+# only needed to run the notebook from the command line / Jupyter
+nbformat==5.11.1
+nbconvert==7.17.2
+ipykernel==7.3.0
+# only needed if REBUILD_LABELS = True (re-derives the Koppen labels from coordinates)
+kgcpy==1.1.8
+pillow==12.3.0

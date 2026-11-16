@@ -1,0 +1,16 @@
+unmapped 0
+{'Temperate': 34.9, 'Subtropical': 27.2, 'Mediterranean': 16.8, 'Arid': 13.6, 'Tropical': 7.6}
+y_rain     Logistic AUC=0.870 F1=0.592
+y_rain     Decision AUC=0.840 F1=0.578
+y_frost    Logistic AUC=0.960 F1=0.501
+y_frost    Decision AUC=0.903 F1=0.427
+y_hot      Logistic AUC=0.954 F1=0.551
+y_hot      Decision AUC=0.913 F1=0.597
+y_gale     Logistic AUC=0.809 F1=0.111
+y_gale     Decision AUC=0.730 F1=0.137
+y_cool     Logistic AUC=0.930 F1=0.288
+y_cool     Decision AUC=0.850 F1=0.258
+zone       Logistic acc=0.589 macroF1=0.530
+zone       Decision acc=0.580 macroF1=0.531
+season     Logistic acc=0.539 macroF1=0.531
+season     Decision acc=0.509 macroF1=0.503
