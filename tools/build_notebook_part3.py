@@ -1,17 +1,15 @@
-"""Part 3 of the project notebook: clustering analysis. Assembled by tools/build_notebook.py."""
+"""Self-contained notebook cells; assemble with tools/build_notebook.py."""
 import nbformat as nbf
-
-cells = []
-md = lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
-code = lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
+cells=[]
+md=lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
+code=lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
 
 md(r"""
 ## 3. Clustering Analysis
 
 **Question.** Without labels, can clustering rediscover the climate zones?
 
-We cluster the same balanced sample of 6,000 days as in Part 2 (preprocessed 20-D `core` features). Labels are
-never given to the algorithms; `Zone` (and the season) are only used afterwards as *external* references.
+We cluster the same balanced sample of 6,000 days as in Part 2 (preprocessed 20-D `core` features). Zone labels determine balanced sampling, but are not supplied to the clustering algorithms. They are external references for interpretation; this is not a wholly label-free sampling pipeline.
 
 ### 3.1 Algorithms and why we chose them
 
@@ -29,8 +27,9 @@ For k = 2 … 10 we record internal metrics (no labels needed) and external metr
 * **Davies–Bouldin** (≥ 0, lower is better): average ratio of within-cluster spread to between-cluster distance.
 * **Calinski–Harabasz** (higher is better): between-cluster variance / within-cluster variance.
 * **Inertia** (K-means, elbow) and **BIC** (GMM, lower is better).
-* **ARI** and **NMI** with `Zone` and with the season (0 = no agreement beyond chance, 1 = identical partition).
+* **ARI** and **NMI** with `Zone` and season. ARI is chance-adjusted; NMI is not. Both equal 1 for identical partitions.
 """)
+
 code(r"""
 from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.cluster import AgglomerativeClustering, KMeans
@@ -69,6 +68,7 @@ def cluster_sweep():
 sweep, labels_k = cached("p3_sweep", cluster_sweep, n_per_zone=N_PER_ZONE, seed=RANDOM_STATE, ks=(2, 10), algs=tuple(ALGS))
 sweep.pivot(index="k", columns="algorithm", values=["silhouette", "Davies-Bouldin", "ARI zone"]).round(3)
 """)
+
 code(r"""
 ALG_COLORS = {"K-means": "#1f77b4", "Ward": "#2ca02c", "GMM": "#d62728"}
 panels = [("silhouette", "Silhouette (higher = better)"), ("Davies-Bouldin", "Davies–Bouldin (lower = better)"),
@@ -93,6 +93,7 @@ replacement) and compare the subsample's partition with the reference partition 
 1 = identical). This needs no rule for assigning left-out points, so it treats K-means, Ward (which has no
 `predict`) and GMM identically. Each (algorithm, k) result is cached separately.
 """)
+
 code(r"""
 from scipy.cluster.hierarchy import fcluster
 N_SUB, SUB_FRAC = 10, 0.8
@@ -139,6 +140,7 @@ low-dimensional "spike" in the data. Rainfall is exactly 0 on 63% of days, so a 
 shared by most of the sample; GMM can give one component (almost) zero variance in that direction and an
 arbitrarily high likelihood. We check the variance of `Rainfall_log1p` inside each component:
 """)
+
 code(r"""
 _, gmm5 = fit_cluster("GMM", 5, X_vis)
 ri = FEATURE_SETS["core"].index("Rainfall_log1p")
@@ -150,18 +152,11 @@ pd.DataFrame({
     "share of dry days (Rainfall = 0)": [dry[gmm_lab == c].mean() for c in range(5)],
 }).round(4)
 """)
-md(r"""
-One component contains essentially all dry days and has zero rainfall variance: GMM is splitting the data into
-"rain / no rain" rather than into compact weather groups. BIC keeps preferring more components because each extra
-component can exploit another spike (calm wind = 0, imputed medians). This is a property of the data (point masses
-from zeros and imputation), not a bug, and it explains why the likelihood-based criterion (BIC) and the
-geometry-based criteria (silhouette, Davies–Bouldin) disagree for GMM.
 
-**GMM settings and a check of the degeneracy.** All GMMs above use scikit-learn defaults except `n_init = 2`:
-`covariance_type = "full"`, `reg_covar = 1e-6` (added to the covariance diagonals), `max_iter = 100`, `tol = 1e-3`,
-k-means initialisation. Below we report convergence and refit with a larger `reg_covar`, which puts a floor under
-every variance and should remove the zero-variance "dry" component if the degeneracy is the problem.
+md(r"""
+Inspect the table for components concentrated on dry days and near the covariance regularisation floor. Point masses from dry weather and imputation can be poorly described by continuous Gaussians. BIC and compactness metrics answer different questions; neither alone establishes a true weather taxonomy.
 """)
+
 code(r"""
 def gmm_sensitivity():
     rows = []
@@ -181,16 +176,13 @@ def gmm_sensitivity():
 gmm_sens = cached("p3_gmm_sensitivity", gmm_sensitivity, n_per_zone=N_PER_ZONE, seed=RANDOM_STATE, version=1)
 gmm_sens.round(4)
 """)
-md(r"""
-All eight fits in the table converged (24–40 EM iterations). With the default `reg_covar = 1e-6` the "dry" component keeps zero
-rainfall variance and 61–63% of the weight. Raising `reg_covar` to 0.1 gives every component a rainfall variance of
-at least 0.13, lowers the largest weight to 0.33–0.41 and roughly triples the silhouette at k = 3 (0.032 → 0.100).
-GMM nevertheless stays below K-means (silhouette 0.164, Davies–Bouldin 1.88 vs 2.70), and its ARI with the zones
-stays ≤ 0.14. The degeneracy explains part of GMM's poor scores; the rest is that these weather data do not form
-well-separated Gaussian groups. The sweep keeps the default GMM; this table is a sensitivity check.
 
-### 3.3 Choosing the best day-level clustering
+md(r"""
+Use the convergence and covariance table above to distinguish numerical convergence from model suitability. Covariance regularisation prevents an exactly singular fitted Gaussian; very small variance around dry/imputed values can nevertheless dominate likelihood. This sensitivity check does not prove a unique physical cause for all differences between algorithms.
+
+### 3.3 Choosing a descriptive day-level partition
 """)
+
 code(r"""
 # Selection rule, applied to all 27 (algorithm, k) solutions:
 #   1. eligible = subsampling stability >= 0.90 (the partition must be reproducible);
@@ -216,23 +208,13 @@ best = sweep[sweep["k"] == K_BEST].set_index("algorithm")[
 print(f"k = {K_BEST}: comparison of the three algorithms")
 best.round(3)
 """)
-md(r"""
-**Decision: K-means with k = 3.** The rule in the code cell above was written down after the first version of this
-analysis (it formalises the reasoning we had used) and it reproduces the original choice:
 
-* Eligible solutions (stability ≥ 0.90) are K-means with k = 2–4 and GMM with k = 3 and 5. Ward is never eligible.
-* K-means k = 3 has the best mean rank (1.67): second on silhouette (0.164 vs 0.171 at k = 2), **first on
-  Davies–Bouldin among all 27 solutions** (1.88), second on Calinski–Harabasz, stability 0.98. K-means k = 2 is
-  first on two metrics but only sixth on Davies–Bouldin (mean rank 2.67).
-* **Ward is the least stable algorithm** (0.26–0.36 for every k): removing 20% of the days changes which large
-  groups are merged first, and a greedy merge can never be undone. It is deterministic for fixed data, but not
-  robust to small changes in the data.
-* GMM is stable at k = 3 and 5 but degenerate (above), and ranks far behind on the internal metrics.
-* The extra cluster at k = 3 is physically meaningful (next section): it splits cool days into two different
-  weather regimes that k = 2 merges.
+md(r"""
+The stability threshold and rank rule were introduced after the earlier exploratory analysis, not preregistered. They choose a descriptive partition under a specific geometry, not a uniquely true number of weather regimes. Low absolute silhouette remains a limitation even when repeatability is high. Additional rule and sampling sensitivity checks follow below.
 
 ### 3.4 Visualising and interpreting the clusters
 """)
+
 code(r"""
 fig, axes = plt.subplots(1, 4, figsize=(23, 5.8))
 scatter_by_zone(axes[0], E2); axes[0].set_title("reference: Köppen zone"); axes[0].legend(markerscale=5, fontsize=8)
@@ -248,6 +230,7 @@ for ax, alg in zip(axes[1:], ALGS):
 plt.suptitle("Clusters drawn on the Part 2 t-SNE map (clustering itself was done in 20-D)")
 plt.tight_layout(); savefig("p3_clusters_on_tsne"); plt.show()
 """)
+
 code(r"""
 km_lab = labels_k[("K-means", K_BEST)]
 profile_cols = ["MaxTemp", "MinTemp", "Temp3pm", "Humidity9am", "Humidity3pm", "Pressure3pm",
@@ -269,28 +252,15 @@ axes[2].set(title="season mix of each cluster", xlabel="", ylabel="")
 plt.tight_layout(); savefig("p3_cluster_profiles"); plt.show()
 print("cluster sizes:", np.bincount(km_lab))
 """)
+
 md(r"""
-**Interpretation (K-means, k = 3).** The clusters are *weather regimes*, not climate zones:
+The temperature, wind, rain and pressure profiles permit descriptive labels such as warm, cool with weaker winds, and cool with stronger winds and more rain. They do not independently verify synoptic fronts. Low agreement with Zone means these particular representations and clustering methods do not closely reproduce the climate labels; it is not a proof that single days contain no climate information.
 
-* **Warm days** — high max/min temperature, slightly lower humidity, mostly summer and autumn. This cluster
-  contains almost all Tropical days (and is about 40% Tropical), because tropical days are warm all year.
-* **Cool, calm days** — the lowest temperatures, low wind and little rain, mostly winter and autumn: settled high-pressure weather.
-* **Cool, windy, wet days** — much higher gusts and rainfall: the passage of fronts and storms, most common in the
-  southern zones (Oceanic, Mediterranean).
+### 3.5 Extra: station climate profiles
 
-Every non-tropical zone appears in all three clusters, because every zone has warm days, calm winter days and
-stormy days. This is why ARI with `Zone` never exceeds 0.13 for any algorithm or k (ARI with the season is
-at most about 0.1 as well): a **single day** of weather does not carry a clear climate signature.
-
-### 3.5 Extra: clustering *stations* instead of days
-
-Climate is the long-term statistics of weather. If we describe each of the 48 stations by its **average seasonal
-cycle** — mean MaxTemp, MinTemp, Humidity3pm and Rainfall for each of the 12 months (48 numbers per station,
-computed from all its days) — the climate signal should no longer be hidden by day-to-day weather.
-
-Pressure is not used because 4 stations never record it. Each of the 48 columns is standardised. This analysis
-uses `Location` only to *aggregate* days; the algorithms still never see the zone labels.
+Aggregate each station to twelve monthly means of four variables. This changes the unit, features, sample size and clustering setup. Differences from day-level ARI therefore cannot be attributed solely to temporal averaging. Coordinates and labels are not clustering inputs; k=5 is an exploratory comparison with the five-label task.
 """)
+
 code(r"""
 PROFILE_VARS = ["MaxTemp", "MinTemp", "Humidity3pm", "Rainfall"]
 station_profile = (df.assign(month=df["Date"].dt.month, Location=groups)
@@ -311,6 +281,7 @@ for k in range(3, 8):
 st_sweep = pd.DataFrame(st_rows)
 st_sweep.pivot(index="k", columns="algorithm", values=["silhouette", "ARI zone", "NMI zone"]).round(3)
 """)
+
 code(r"""
 Z = linkage(S, method="ward")
 st_lab = AgglomerativeClustering(n_clusters=5, linkage="ward").fit_predict(S)
@@ -324,6 +295,7 @@ ax.set(title="Ward dendrogram of 48 station climate profiles (labels coloured by
        ylabel="Ward merge distance")
 plt.tight_layout(); savefig("p3_station_dendrogram"); plt.show()
 """)
+
 code(r"""
 loc_xy = zones.set_index("Location").loc[station_profile.index, ["lon", "lat"]]
 fig, axes = plt.subplots(1, 2, figsize=(16, 6.5))
@@ -343,6 +315,7 @@ print(pd.crosstab(pd.Series(st_lab, name="cluster"), pd.Series(station_zone_true
 for c in range(5):
     print(f"cluster {c}: " + ", ".join(station_profile.index[st_lab == c]))
 """)
+
 code(r"""
 compare = pd.DataFrame({
     "unit clustered": ["one day (6,000 days)", "one day (6,000 days)", "station profile (48 stations)"],
@@ -356,33 +329,48 @@ compare = pd.DataFrame({
 }).round(3)
 compare
 """)
+
 md(r"""
-**Interpretation of the station clusters (Ward, k = 5).**
+### 3.6 Scope of the station-profile comparison
 
-* Two Köppen zones are recovered exactly: all 4 **Tropical** stations form one cluster, and a second cluster
-  holds exactly the 9 **coastal Subtropical** stations from Brisbane to Wollongong.
-* The other three clusters follow **distance from the sea** more than Köppen's rainfall-season rule: a hot, dry
-  *inland* cluster (6 of the 7 Arid stations, plus the Perth area, Adelaide, Moree and western Sydney), a cool
-  *south-east* cluster (10 of 11 Oceanic stations plus Albury, Wagga Wagga, Nhil and the Mediterranean stations of
-  south-east South Australia / western Victoria), and a small cool, wet, windy
-  *south-west coast* cluster (Albany, Walpole, Witchcliffe, Portland, and the alpine MountGinini).
-* The Mediterranean zone is split across three clusters. Köppen defines it by a *ratio* (the driest summer month
-  has less than a third of the wettest winter month's rain), which is a small part of our 48-number profile,
-  whereas temperature and humidity differences between coast and inland dominate the Euclidean distance.
-* ARI with the zones rises from about 0.1 for days to about 0.35 for stations (and to 0.42–0.46 for k = 7).
+Read cluster membership and the cross-tabulation above. A coastal Subtropical subset is not an entire Köppen class. Coast/inland interpretations are hypotheses based on station names and coordinates, not a tested distance-to-coast mechanism. The dataset has only 48 labelled stations; ARI comparisons across day and station units are descriptive.
+""")
 
-### 3.6 Summary of Part 3
+md(r"""
+### 3.7 Selection-rule and sampling sensitivity
+The earlier ranking rule was post-hoc. Vary its stability threshold and remove one compactness criterion at a time. Natural-frequency sampling checks the influence of label-balanced sampling. Perturb entire stations or years rather than scattered days, using the same reference scaling; these diagnostics examine composition sensitivity, not prediction on unobserved stations. Low silhouette is not cured by high stability.
+""")
 
-1. **Algorithms**: K-means, Ward agglomerative and GMM (full covariance), each for k = 2–10, compared with three
-   internal metrics, two external metrics, subsampling stability (all three algorithms), inertia and BIC.
-2. **Best day-level result** (stability ≥ 0.90, best mean rank of silhouette / Davies–Bouldin / Calinski–Harabasz):
-   K-means, k = 3 (lowest Davies–Bouldin of all solutions, near-best silhouette, stability 0.98). Its clusters are
-   weather regimes (warm / cool-calm / cool-windy-wet), not climate zones.
-3. **Algorithm comparison**: K-means ≥ Ward on all internal metrics, and Ward is unstable under subsampling
-   (≤ 0.36); GMM with full covariance degenerates by placing a zero-variance component on the 63% of dry days, so
-   BIC and silhouette disagree; a larger `reg_covar` reduces but does not remove the gap to K-means.
-4. **Can clustering rediscover the zones?** From single days, no (ARI ≤ 0.13 for every algorithm and k). From
-   station climate profiles, partly (ARI ≈ 0.35): the tropics and the subtropical coast are found exactly, and the
-   rest of the map is organised by coast vs. inland. For Part 4 this means a classifier must combine many weak
-   signals of a single day; we should expect Tropical to be easy and the southern zones to be confused.
+code(r"""
+rule_rows=[]
+for threshold in [.80,.85,.90,.95]:
+    for metrics in [["silhouette","Davies-Bouldin","Calinski-Harabasz"],["silhouette","Davies-Bouldin"],["silhouette","Calinski-Harabasz"],["Davies-Bouldin","Calinski-Harabasz"]]:
+        eligible=sweep[sweep.stability>=threshold].copy()
+        if len(eligible):
+            ranking=sum(sweep[m].rank(ascending=(m=="Davies-Bouldin")) for m in metrics)/len(metrics)
+            winner=eligible.loc[ranking.loc[eligible.index].idxmin()]
+            rule_rows.append({"threshold":threshold,"metrics":";".join(metrics),"algorithm":winner.algorithm,"k":int(winner.k)})
+export_table("clustering_rule_sensitivity",pd.DataFrame(rule_rows))
+
+def cluster_sampling_controls():
+    out=[]
+    natural=df.sample(n=len(sample_idx),random_state=42).index
+    xn=build_preprocessor().fit_transform(F.loc[natural,FEATURE_SETS["core"]])
+    for alg in ALGS:
+        lab,_=fit_cluster(alg,3,xn)
+        out.append({"scheme":"natural-frequency","algorithm":alg,"repeat":0,"n":len(xn),"ARI_reference":np.nan,"ARI_zone":adjusted_rand_score(y[natural],lab),"silhouette":silhouette_score(xn,lab)})
+    year=df.loc[sample_idx,"Date"].dt.year.to_numpy()
+    for scheme,block in [("station-block",g_vis),("year-block",year)]:
+        unique=np.unique(block)
+        for rep in range(5):
+            kept=np.random.default_rng(100+rep).choice(unique,max(2,int(.8*len(unique))),replace=False)
+            idx=np.flatnonzero(np.isin(block,kept))
+            for alg in ALGS:
+                lab,_=fit_cluster(alg,3,X_vis[idx],seed=42+rep)
+                out.append({"scheme":scheme,"algorithm":alg,"repeat":rep,"n":len(idx),"ARI_reference":adjusted_rand_score(labels_k[(alg,3)][idx],lab),"ARI_zone":adjusted_rand_score(y_vis[idx],lab),"silhouette":silhouette_score(X_vis[idx],lab)})
+    return pd.DataFrame(out)
+cluster_controls=cached("cluster_sampling_controls",cluster_sampling_controls)
+export_table("clustering_sampling_controls",cluster_controls)
+cluster_controls.groupby(["scheme","algorithm"])[["ARI_reference","ARI_zone","silhouette"]].mean().round(3)
+
 """)

@@ -1,0 +1,17 @@
+,threshold,metrics,algorithm,k
+0,0.8,silhouette;Davies-Bouldin;Calinski-Harabasz,K-means,3
+1,0.8,silhouette;Davies-Bouldin,K-means,3
+2,0.8,silhouette;Calinski-Harabasz,K-means,2
+3,0.8,Davies-Bouldin;Calinski-Harabasz,K-means,3
+4,0.85,silhouette;Davies-Bouldin;Calinski-Harabasz,K-means,3
+5,0.85,silhouette;Davies-Bouldin,K-means,3
+6,0.85,silhouette;Calinski-Harabasz,K-means,2
+7,0.85,Davies-Bouldin;Calinski-Harabasz,K-means,3
+8,0.9,silhouette;Davies-Bouldin;Calinski-Harabasz,K-means,3
+9,0.9,silhouette;Davies-Bouldin,K-means,3
+10,0.9,silhouette;Calinski-Harabasz,K-means,2
+11,0.9,Davies-Bouldin;Calinski-Harabasz,K-means,3
+12,0.95,silhouette;Davies-Bouldin;Calinski-Harabasz,K-means,3
+13,0.95,silhouette;Davies-Bouldin,K-means,3
+14,0.95,silhouette;Calinski-Harabasz,K-means,2
+15,0.95,Davies-Bouldin;Calinski-Harabasz,K-means,3

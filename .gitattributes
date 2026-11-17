@@ -1,0 +1,15 @@
+# Preserve byte-level data hashes across Windows/Linux checkouts.
+*.csv -text
+*.zip -text
+*.npy -text
+*.npz -text
+*.pkl -text
+*.pdf -text
+*.png -text
+*.py text eol=lf
+*.md text eol=lf
+*.tex text eol=lf
+*.sty text eol=lf
+*.json text eol=lf
+*.ipynb text eol=lf
+*.txt text eol=lf

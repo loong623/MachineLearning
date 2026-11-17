@@ -1,0 +1,6 @@
+,,accuracy,accuracy,macro-F1,macro-F1
+split,,grouped,random,grouped,random
+features,missing indicator,,,,
+core,False,0.563,0.599,0.561,0.615
+full,False,0.569,0.606,0.567,0.622
+full,True,0.572,0.671,0.558,0.688

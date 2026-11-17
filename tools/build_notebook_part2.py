@@ -1,9 +1,8 @@
-"""Part 2 of the project notebook: t-SNE visualisation. Assembled by tools/build_notebook.py."""
+"""Self-contained notebook cells; assemble with tools/build_notebook.py."""
 import nbformat as nbf
-
-cells = []
-md = lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
-code = lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
+cells=[]
+md=lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
+code=lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
 
 md(r"""
 ## 2. Data Visualization with t-SNE
@@ -16,13 +15,13 @@ t-SNE costs roughly O(n log n) per iteration with a large constant, so we embed 
 (6,000 days)**. Balancing keeps the small Tropical class (7.6% of rows) from being drowned by Subtropical (32%) in the
 picture. The same sample is reused for clustering in Part 3.
 
-The preprocessor (median imputation + standardisation, no missing indicators) is fitted on this sample. No labels
-are used anywhere in t-SNE; `Zone` is only used afterwards to colour the points.
+The preprocessor (median imputation + standardisation, no missing indicators) is fitted on this sample. Zone labels determine the balanced sampling; the t-SNE optimisation itself receives no labels. The picture describes this deliberately reweighted sample, not the natural data frequency.
 
-Each embedding takes 20–30 s. Embeddings are cached in `data/processed/tsne/`; the file name contains a hash of
-the input matrix and the parameters, so a changed input can never reuse a stale result. Set `RECOMPUTE_TSNE = True`
+Each embedding takes 20–30 s. Embeddings are cached under `data/processed/tsne_audit/<run_id>/`; the file name contains a hash of
+the input matrix and the parameters, and the full experiment fingerprint, so code/data/environment changes invalidate results. Set `RECOMPUTE_TSNE = True`
 to ignore the cache.
 """)
+
 code(r"""
 N_PER_ZONE = 1200
 sample_idx = df.groupby("Zone", group_keys=False).sample(n=N_PER_ZONE, random_state=RANDOM_STATE).index
@@ -35,8 +34,8 @@ SEASON_OF_MONTH = {12: "Summer", 1: "Summer", 2: "Summer", 3: "Autumn", 4: "Autu
 season_vis = np.array([SEASON_OF_MONTH[m] for m in month_vis])
 print("sample:", X_vis.shape, "| stations in sample:", len(set(g_vis)))
 
-TSNE_DIR = DATA_DIR / "processed" / "tsne"; TSNE_DIR.mkdir(parents=True, exist_ok=True)
-RECOMPUTE_TSNE = False
+TSNE_DIR = DATA_DIR / "processed" / "tsne_audit" / RUN_ID; TSNE_DIR.mkdir(parents=True, exist_ok=True)
+RECOMPUTE_TSNE = RECOMPUTE
 
 def tsne_cached(X, n_components=2, perplexity=30, seed=RANDOM_STATE):
     key = hashlib.sha256(np.ascontiguousarray(X).tobytes()).hexdigest()[:12]
@@ -64,6 +63,7 @@ md(r"""
 
 We colour the same embedding three ways: by zone (our target), by month, and by maximum temperature.
 """)
+
 code(r"""
 E2 = tsne_cached(X_vis, perplexity=30)
 
@@ -102,6 +102,7 @@ PCA to 2-D is the linear baseline. **These are diagnostics of the picture, not e
 performance**: t-SNE reshapes neighbourhoods, it used all 6,000 points at once (no train/test separation), and days
 of the same station appear on both sides of every k-NN fold. Generalisation is measured in Parts 4–6.
 """)
+
 code(r"""
 pca2 = PCA(n_components=2, random_state=RANDOM_STATE).fit(X_vis)
 P2 = pca2.transform(X_vis)
@@ -120,6 +121,7 @@ print(f"chance level: zone 0.20, season ~0.25, station ~{1 / 48:.3f}; "
       f"PCA explains {pca2.explained_variance_ratio_.sum():.1%} of the variance in 2-D")
 quant
 """)
+
 code(r"""
 # Which zones are mixed with which? k-NN predictions on the t-SNE map, row-normalised
 pred = cross_val_predict(KNeighborsClassifier(n_neighbors=10), E2, y_vis, cv=5)
@@ -138,6 +140,7 @@ The month colouring shows a strong summer–winter gradient. If season alone dro
 separate much better once the season is held fixed. We check this by (a) embedding summer days and winter days
 separately, and (b) removing the two day-of-year features.
 """)
+
 code(r"""
 feat = FEATURE_SETS["core"]
 no_season_cols = [i for i, f in enumerate(feat) if not f.startswith("doy")]
@@ -157,6 +160,7 @@ for name, (Xv, yv) in variants.items():
                  "season κ (t-SNE)": knn_kappa(Ev, sv) if sv is not None else np.nan})
 pd.DataFrame(rows).set_index("variant").round(3)
 """)
+
 code(r"""
 fig, axes = plt.subplots(1, 3, figsize=(18, 5.5))
 for ax, name in zip(axes, list(embs)[1:]):
@@ -173,6 +177,7 @@ Perplexity is roughly the number of effective neighbours each point considers: s
 detail, large values preserve more global structure. t-SNE is also non-convex, so different seeds give different
 layouts; conclusions should hold for all of them.
 """)
+
 code(r"""
 perplexities = [5, 30, 50, 100]
 fig, axes = plt.subplots(1, 4, figsize=(22, 5.5))
@@ -186,6 +191,7 @@ axes[0].legend(markerscale=5, fontsize=8)
 plt.tight_layout(); savefig("p2_tsne_perplexity"); plt.show()
 pd.DataFrame(perp_rows).set_index("perplexity").round(3).T
 """)
+
 code(r"""
 seeds = [0, 7, RANDOM_STATE]
 fig, axes = plt.subplots(1, 3, figsize=(17, 5.5))
@@ -196,7 +202,10 @@ axes[0].legend(markerscale=5, fontsize=8)
 plt.tight_layout(); savefig("p2_tsne_seeds"); plt.show()
 """)
 
-md("### 2.6 PCA (linear) vs t-SNE, and a 3-D t-SNE view")
+md(r"""
+### 2.6 PCA (linear) vs t-SNE, and a 3-D t-SNE view
+""")
+
 code(r"""
 fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 scatter_by_zone(axes[0], P2)
@@ -205,6 +214,7 @@ scatter_by_zone(axes[1], E2); axes[1].set_title(f"t-SNE 2-D | purity {knn_purity
 axes[0].legend(markerscale=5, fontsize=9)
 plt.tight_layout(); savefig("p2_pca_vs_tsne"); plt.show()
 """)
+
 code(r"""
 E3 = tsne_cached(X_vis, n_components=3, perplexity=30)
 fig = plt.figure(figsize=(13, 6))
@@ -221,40 +231,7 @@ print("zone purity in 3-D t-SNE:", round(knn_purity(E3, y_vis), 3))
 """)
 
 md(r"""
-### 2.7 Observations and insights
+### 2.7 Interpretation and limits
 
-The numbers below refer to the tables printed above.
-
-1. **Only the Tropical zone forms its own region.** Tropical days occupy a separate band of the map, and 96% of
-   them have a Tropical majority among their 10 nearest neighbours. The four other zones overlap heavily: their
-   neighbourhood agreement is only about 0.50–0.64. Hot nights (MinTemp ≈ 20–25 °C) and low pressure make tropical
-   days unlike anything else, while a mild day in Adelaide can look exactly like one in Melbourne.
-2. **The season gradient on the map comes mostly from the calendar features.** The month colouring shows summer
-   and winter days on opposite sides. With all 20 features, neighbourhoods agree about equally well on season and on
-   zone (κ 0.55 vs 0.54; the raw purities 0.663 vs 0.631 are not comparable because the chance levels differ).
-   But `doy_sin`/`doy_cos` are inputs, so part of this is by construction: without them, season agreement falls to
-   κ 0.17 while zone agreement stays at 0.49. The weather itself carries more information about the zone than about
-   the season. Holding the season fixed (summer-only or winter-only embeddings) changes zone κ only slightly
-   (0.57 and 0.55 vs 0.54), so season does not explain the overlap between zones.
-   The season-specific maps do show *which* zone is distinctive when: in winter the Tropical days form a
-   completely separate island (warm, humid dry season vs. cool south), while in summer the Arid days move to
-   their own edge (hottest and driest), opposite the hot-and-humid Tropical days.
-3. **The confusions follow climate similarity.** Mediterranean and Oceanic are the most mixed pair
-   (both southern, temperate, wet winter); Arid days mix most with Mediterranean (hot, dry summers in
-   inland South Australia and Victoria). This is the confusion pattern we expect the classifiers in Part 4 to show.
-4. **Neighbours also share stations.** Station purity on the map is 0.31 (κ 0.29; chance 0.02): days from the
-   same station tend to have similar neighbours. This shows that station-specific information is present in the
-   weather variables. It does not by itself show what a classifier will learn; it is a warning that a random
-   train/test split *could* reward recognising stations, which Parts 4–6 test directly.
-5. **t-SNE vs PCA.** A 2-D PCA projection keeps 42% of the variance and preserves neighbourhoods poorly
-   (trustworthiness 0.81 vs 0.985 for t-SNE; zone κ 0.22 vs 0.54). So t-SNE preserves *local neighbourhoods* much
-   better than a 2-D linear projection. This alone does not prove that the zone structure is non-linear: two
-   principal components discard more than half of the variance.
-6. **Robustness.** Zone purity varies by about ±0.01 across perplexities 5–100 and across three random seeds,
-   so the conclusions do not depend on these settings. The 2-D maps keep almost all of the 20-D neighbourhood
-   information: the 20-D k-NN purity (0.683) is only about 5 points higher than on the t-SNE map (0.631).
-
-**Limitations of reading t-SNE.** Distances between groups, group sizes and the empty space on the map are not
-meaningful; t-SNE preserves local neighbourhoods only. The embedding also cannot place new points, so it is used
-here for exploration, not as input to the classifiers.
+Read the new tables and plots above. Compare zone mixing, season controls, seed/perplexity sensitivity and neighbourhood preservation. High local label agreement is descriptive: labels influenced sampling and station days occur on both sides of the diagnostic kNN folds. Kappa adjusts chance agreement but is not an information-theoretic comparison between different prediction targets. t-SNE distances between islands and apparent island sizes should not be interpreted physically; classifiers below use the original features, not t-SNE coordinates.
 """)

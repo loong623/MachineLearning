@@ -1,16 +1,8 @@
-"""Generate Part 0-1 of the project notebook (setup, labels, preprocessing, EDA).
-
-The submitted zip only contains the notebook + data/, so the notebook must be
-self-contained: all code lives in its cells (no `import src...`).
-Assembled by tools/build_notebook.py (run that one).
-"""
-from pathlib import Path
-
+"""Self-contained notebook cells; assemble with tools/build_notebook.py."""
 import nbformat as nbf
-
-cells = []
-md = lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
-code = lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
+cells=[]
+md=lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
+code=lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
 
 md(r"""
 # DSAA2011 Course Project (Task A) — *"Where am I?"*
@@ -31,7 +23,10 @@ can we tell which climate zone the station belongs to?
 (groups A and B kept whole, group C split into Cfa / Cs / Cfb). See Section 0.2.
 """)
 
-md("## 0. Setup")
+md(r"""
+## 0. Setup
+""")
+
 code(r"""
 import hashlib
 import io
@@ -70,26 +65,42 @@ def savefig(name):
     # every figure is also written to figures/ so the report and slides use the same image
     plt.savefig(FIG_DIR / f"{name}.png", dpi=200, bbox_inches="tight")
 
-# --- result cache -------------------------------------------------------------------------
-# Cross-validation, grid searches and t-SNE take 10 s - 2 min each. Their results are stored in
-# data/processed/cache/. The file name contains a hash of the data version and of all parameters,
-# so changing a parameter (or the data) automatically triggers a recomputation.
-# RECOMPUTE = True ignores every cache and reruns everything (about 15-20 min on a laptop).
-import pickle
-CACHE_DIR = DATA_DIR / "processed" / "cache"; CACHE_DIR.mkdir(parents=True, exist_ok=True)
-RECOMPUTE = False
-
+# Cache identity includes executable notebook code, data/annotation and environment.
+import pickle, json, os, platform, importlib.metadata, time
+from threadpoolctl import threadpool_limits
+_thread_limit = threadpool_limits(limits=2)
+nb_file = Path("project_XX_TaskA.ipynb")
+nb_source = json.loads(nb_file.read_text(encoding="utf-8"))
+code_digest = hashlib.sha256("\n".join("".join(c["source"]) for c in nb_source["cells"] if c["cell_type"] == "code").encode()).hexdigest()
+file_digests = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in [RAW_CSV, DATA_DIR / "processed/location_zone.csv", DATA_DIR / "external/location_station.csv"]}
+environment = {d.metadata["Name"]: d.version for d in importlib.metadata.distributions()}
+identity = {"schema": "review-v2", "code_sha256": code_digest, "files": file_digests, "environment": environment, "python": platform.python_version()}
+RUN_ID = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()[:16]
+CACHE_DIR = DATA_DIR / "processed/audit_cache" / RUN_ID
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+RESULT_DIR = Path("results"); RESULT_DIR.mkdir(exist_ok=True)
+RECOMPUTE = os.environ.get("ML_RECOMPUTE", "0") == "1"
+CACHE_EVENTS = []
 def cached(name, compute, **params):
-    key = hashlib.sha256(repr((RAW_SHA256, sorted(params.items()))).encode()).hexdigest()[:12]
+    key = hashlib.sha256(repr(sorted(params.items())).encode()).hexdigest()[:12]
     path = CACHE_DIR / f"{name}_{key}.pkl"
-    if path.exists() and not RECOMPUTE:
-        with open(path, "rb") as f:
-            return pickle.load(f)
-    result = compute()
-    with open(path, "wb") as f:
-        pickle.dump(result, f)
+    hit = path.exists() and not RECOMPUTE
+    t0 = time.time()
+    if hit:
+        with path.open("rb") as stream: result = pickle.load(stream)
+    else:
+        result = compute()
+        temp = path.with_suffix(".tmp")
+        with temp.open("wb") as stream: pickle.dump(result, stream)
+        temp.replace(path)
+    CACHE_EVENTS.append({"name": name, "hit": hit, "seconds": time.time()-t0})
+    print(f"cache {'hit' if hit else 'computed'}: {name} ({time.time()-t0:.1f}s)", flush=True)
     return result
-
+def export_table(name, table):
+    table.to_csv(RESULT_DIR / f"{name}.csv", index=True)
+    return table
+(RESULT_DIR / "environment.json").write_text(json.dumps(identity, indent=2, sort_keys=True), encoding="utf-8")
+print("Experiment fingerprint:", RUN_ID)
 print("numpy", np.__version__, "| pandas", pd.__version__, "| scikit-learn", sklearn.__version__)
 """)
 
@@ -112,7 +123,7 @@ The dataset has no climate label, so we construct one from two documented source
 The five classes are **project-defined groups of Köppen codes** (we call them "zones" for short). Groups A and B
 are kept whole; group C is split by Köppen's own second letter (f = no dry season, s = dry summer) and third letter
 (a = hot summer, b = warm summer). Only Am, Aw, BWh, BSh, BSk, Cfa, Csa, Csb and Cfb occur at our stations; there
-are no D (snow) or E (polar) climates in the data. Any code outside the mapping below would receive no label.
+are no D (snow) or E (polar) climates in the data. The code below defines the complete mapping, including additional codes not observed at these sites.
 
 | Zone | Köppen | Meaning |
 |---|---|---|
@@ -124,6 +135,7 @@ are no D (snow) or E (polar) climates in the data. Any code outside the mapping 
 
 The table is cached in `data/processed/location_zone.csv`; set `REBUILD_LABELS = True` to regenerate it.
 """)
+
 code(r"""
 KOPPEN_TO_ZONE = {
     "Af": "Tropical", "Am": "Tropical", "Aw": "Tropical", "As": "Tropical",
@@ -133,7 +145,7 @@ KOPPEN_TO_ZONE = {
     "Cfb": "Oceanic", "Cfc": "Oceanic",
 }
 ZONE_CSV = DATA_DIR / "processed" / "location_zone.csv"
-REBUILD_LABELS = False
+REBUILD_LABELS = False  # annotation is fixed; sensitivity is reported separately
 
 def read_bom_stations(zip_path):
     # BoM station list is a fixed-width text file; the first 4 lines are a header
@@ -172,21 +184,25 @@ for zone, s in zones.groupby(zones["Zone"].fillna("(no label)"))["Location"]:
 print("\nboundary / unlabeled stations:")
 zones[zones["zone_boundary"] | zones["Zone"].isna()][["Location", "koppen", "neighbour_codes", "Zone"]]
 """)
+
 md(r"""
 **Full audit table** (all 49 stations): dataset `Location` → BoM site number and name → coordinates → Köppen code
 at that pixel → codes found in the surrounding 3 × 3 pixels → project group. Anyone can check a row by looking up
 the site number in the BoM list and the coordinates on the Köppen map.
 """)
+
 code(r"""
 with pd.option_context("display.max_rows", 60, "display.width", 200):
     display(zones[["Location", "bom_site", "bom_name", "lat", "lon", "koppen", "neighbour_codes", "zone_boundary", "Zone"]]
             .sort_values(["Zone", "Location"], na_position="last").reset_index(drop=True))
 """)
+
 md(r"""
 **Norfolk Island.** Its station (BoM 200288, Norfolk Island Aero) gets the code "Ocean". To rule out a coordinate or
-rounding error we search outward from its pixel for the nearest *land* pixel of the raster. This needs `kgcpy`; the
+rounding error we search outward from its pixel for the a nearby *land* pixel on the first occupied square ring of the raster. This needs `kgcpy`; the
 result is cached so the notebook runs without it.
 """)
+
 code(r"""
 def norfolk_check():
     import kgcpy
@@ -213,12 +229,14 @@ def norfolk_check():
 
 pd.Series(cached("p0_norfolk_check", norfolk_check, version=1))
 """)
+
 md(r"""
 The island is simply not on the raster (it is about 8 km across and the map's land mask omits it): the first land
 pixel appears 185 pixels away, at the northern tip of New Zealand, 736 km from the station. The "Ocean" code is
 therefore not a coordinate or rounding error. Rather than assign a label by hand, we drop the station (3,009 rows, 2.1% of the
 data). Because it had no label, dropping it does not change the class proportions of the remaining data.
 """)
+
 code(r"""
 # Where are the stations? (plain lon/lat scatter, no basemap needed)
 z = zones.dropna(subset=["Zone"])
@@ -244,9 +262,10 @@ For this target, three columns must never be features:
 * `RainTomorrow` — information from the next day;
 * `RISK_MM` — next-day rainfall in older versions of the dataset (we check rather than assume it is absent).
 
-`Location` is kept **outside** the feature table as `groups`; it is only used for station-grouped splits and error analysis.
+`Location` is kept **outside** the feature table as `groups`; it is used for splits, within-station trailing windows and error analysis, never as a predictor.
 `Date` is only used to derive the day of year; the year itself is not used.
 """)
+
 code(r"""
 def sha256(path):
     h = hashlib.sha256()
@@ -273,6 +292,7 @@ df = df.drop(columns=[c for c in LEAKAGE_DROP if c in df.columns])
 y = df["Zone"].values
 print("final shape:", df.shape, "| duplicated (Date, station):", pd.DataFrame({"d": df["Date"], "g": groups}).duplicated().sum())
 """)
+
 code(r"""
 fig, axes = plt.subplots(1, 2, figsize=(13, 4))
 cnt = df["Zone"].value_counts().reindex(ZONE_ORDER)
@@ -293,6 +313,7 @@ md(r"""
 
 We first look at *where* values are missing, not just how many.
 """)
+
 code(r"""
 RAW_FEATURES = ["MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine", "WindGustDir", "WindGustSpeed",
                 "WindDir9am", "WindDir3pm", "WindSpeed9am", "WindSpeed3pm", "Humidity9am", "Humidity3pm",
@@ -304,6 +325,7 @@ summary = pd.DataFrame({
 }).sort_values("missing_%", ascending=False)
 summary
 """)
+
 code(r"""
 # station x column heatmap, stations sorted by zone; tick labels coloured by zone
 station_zone = zones.set_index("Location")["Zone"]
@@ -316,12 +338,14 @@ for t in ax.get_yticklabels():
 ax.set(title="Missing rate per station and column (station names coloured by zone)", xlabel="", ylabel="")
 savefig("p1_missing_heatmap"); plt.show()
 """)
+
 md(r"""
 **Observation.** Missingness is a *station property*: Sunshine, Evaporation and Cloud are absent for entire stations
-(12–19 of 48) because those stations do not have the instruments. This creates a hidden risk for our target:
+(12–19 of 48) possibly reflecting instrument availability or reporting practices. This creates a hidden risk for our target:
 the *pattern* of missing values may identify the station, and the station determines the zone.
 We test this directly: train a decision tree on **only the 20 is-missing flags** (no weather values at all).
 """)
+
 code(r"""
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
 X_missing = df[RAW_FEATURES].isna().astype(int)
@@ -340,15 +364,11 @@ def fingerprint_test():
 fingerprint = cached("p1_fingerprint", fingerprint_test, seed=RANDOM_STATE, cols=tuple(RAW_FEATURES))
 pd.DataFrame(fingerprint).T
 """)
-md(r"""
-**Result.** The missing flags alone predict the zone far above the majority baseline and identify the exact station
-about 10× better than chance. Missing indicators (and any imputation that copies station-specific values) would
-therefore let a model *recognise the station* instead of *learning the climate*. The year, by contrast, carries
-almost no information here (most stations start in 2008–2009); we still exclude it because it has no
-meteorological meaning.
 
-### 1.3 Two missing values that are not really missing
+md(r"""
+Missingness-only prediction is an exploratory diagnostic of station-specific information. It does not establish that all such information is non-climatic or harmful under every deployment target. The core feature policy is retained from the earlier exploratory work; its sensitivity is re-evaluated inside the outer-fold analysis.
 """)
+
 code(r"""
 for d, s in [("WindDir9am", "WindSpeed9am"), ("WindDir3pm", "WindSpeed3pm")]:
     calm = df[s] == 0
@@ -357,6 +377,7 @@ for d, s in [("WindDir9am", "WindSpeed9am"), ("WindDir3pm", "WindSpeed3pm")]:
 r = df.dropna(subset=["Rainfall", "RainToday"])
 print("RainToday == (Rainfall > 1 mm) for", f"{((r['Rainfall'] > 1) == (r['RainToday'] == 'Yes')).mean():.1%}", "of rows")
 """)
+
 md(r"""
 * **Calm wind.** Every row with wind speed 0 has no direction: the direction is *undefined*, not unknown.
   Encoding wind as a vector `(u, v)` handles this exactly — calm is `(0, 0)`.
@@ -376,6 +397,7 @@ md(r"""
 
 All transformations in `make_features` are row-wise (no statistics are learned), so applying them before the split is safe.
 """)
+
 code(r"""
 COMPASS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
 DIR_TO_DEG = {d: i * 22.5 for i, d in enumerate(COMPASS)}
@@ -422,6 +444,7 @@ print("features:", F.shape[1], "| core set:", X_core.shape[1], "columns")
 print("remaining missing rate in core set (top 5):")
 print((X_core.isna().mean() * 100).round(1).sort_values(ascending=False).head(5).to_string())
 """)
+
 code(r"""
 fig, axes = plt.subplots(1, 2, figsize=(11, 3.5))
 axes[0].hist(df["Rainfall"].dropna(), bins=80, color="steelblue"); axes[0].set_yscale("log")
@@ -436,6 +459,7 @@ md(r"""
 
 The **seasonal cycle** is the textbook definition of the Köppen classes, so we expect it to be visible in the data.
 """)
+
 code(r"""
 monthly = df.assign(month=df["Date"].dt.month).groupby(["Zone", "month"])[
     ["MaxTemp", "Humidity3pm", "Rainfall", "Pressure3pm"]].mean()
@@ -451,6 +475,7 @@ for ax in axes[1]:
 axes[0, 0].legend(ncol=2, fontsize=9)
 plt.suptitle("Seasonal cycle by zone"); plt.tight_layout(); savefig("p1_seasonal_cycle"); plt.show()
 """)
+
 code(r"""
 show = ["MaxTemp", "MinTemp", "Humidity3pm", "Pressure3pm", "WindGustSpeed", "Rainfall_log1p"]
 fig, axes = plt.subplots(2, 3, figsize=(15, 8))
@@ -462,6 +487,7 @@ for ax, col in zip(axes.ravel(), show):
 fig.suptitle("Feature distributions by zone (outliers hidden)")
 plt.tight_layout(); savefig("p1_boxplots"); plt.show()
 """)
+
 code(r"""
 corr = X_core.corr()
 fig, ax = plt.subplots(figsize=(11, 9))
@@ -479,8 +505,9 @@ A quick logistic-regression probe (full evaluation follows in Parts 4–5). Two 
 * **random stratified 70/30** — can the model recognise a *new day* of stations it has seen?
 * **station-grouped 70/30** — can it recognise the zone of *stations it has never seen*?
 
-If a preprocessing choice helps only under the random split, it is helping the model memorise stations.
+A protocol-dependent gain is consistent with station-specific information, but is not by itself proof of its cause.
 """)
+
 code(r"""
 idx = np.arange(len(df))
 rand_tr, rand_te = train_test_split(idx, test_size=0.3, stratify=y, random_state=RANDOM_STATE)
@@ -504,29 +531,7 @@ sens = pd.DataFrame(rows).pivot_table(index=["features", "missing indicator"], c
                                       values=["accuracy", "macro-F1"]).round(3)
 sens
 """)
+
 md(r"""
-**Reading the table.** Adding missing indicators raises the random-split score clearly but gives no gain on unseen
-stations — the improvement comes from recognising stations, not climate. Adding the four sensor columns without
-indicators changes little. We therefore use the **`core` feature set without missing indicators** as the default
-for all later parts, and keep `full` + indicators only as a documented counter-example.
-
-### 1.7 Summary of Part 1
-
-**Methods.** Köppen-derived 5-class target from BoM coordinates; explicit removal of `Location`, `RainTomorrow`
-(and a check for `RISK_MM`); NorfolkIsland dropped (no Köppen label on the 3 km grid); wind as `(u, v)` vectors
-with calm = 0; day-of-year as `sin/cos`; `log1p` for rainfall; `RainToday` dropped as redundant; median imputation
-and standardisation inside a pipeline fitted on training data only; 20 `core` features.
-
-**Observations.**
-1. Classes are moderately imbalanced (Subtropical 32% vs Tropical 7.6%), so we report macro-averaged metrics.
-2. Missingness is structured by station, and the missing pattern alone identifies stations ≈10× better than chance —
-   a concrete leakage route that we close by excluding whole-station sensor columns and indicators.
-3. The seasonal cycle separates the zones in the way Köppen defines them: Tropical has the summer wet season,
-   Mediterranean the winter rain, Arid the lowest humidity, Oceanic the coolest summers.
-4. Temperature variables are highly correlated (e.g. `MaxTemp`–`Temp3pm`), which matters for the interpretation of
-   linear-model coefficients later.
+This is an exploratory preprocessing comparison, not an independent assessment of a selected policy. A difference between protocols suggests sensitivity to station composition; it does not causally separate instrumentation from climate. Part 6 repeats the comparison with fixed policies and outer station folds. The core policy is not reselected from test scores.
 """)
-
-if __name__ == "__main__":
-    import build_notebook          # keep the old entry point working
-    build_notebook.main()

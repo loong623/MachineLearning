@@ -1,0 +1,279 @@
+,experiment,model,seed,fold,params,iterations,warnings,seconds
+0,random,LR,42,-1,{},"array([114], dtype=int32)",[],1.6515438556671143
+1,time,LR,42,-1,{},"array([117], dtype=int32)",[],1.4624686241149902
+2,daily,LR,42,0,{},"array([126], dtype=int32)",[],1.7865655422210693
+3,daily,LR,42,1,{},"array([126], dtype=int32)",[],1.7020378112792969
+4,daily,LR,42,2,{},"array([113], dtype=int32)",[],1.5700945854187012
+5,daily,LR,42,3,{},"array([120], dtype=int32)",[],1.611746072769165
+6,daily,LR,0,0,{},"array([119], dtype=int32)",[],1.5966267585754395
+7,daily,LR,0,1,{},"array([134], dtype=int32)",[],1.7853970527648926
+8,daily,LR,0,2,{},"array([120], dtype=int32)",[],1.5929534435272217
+9,daily,LR,0,3,{},"array([111], dtype=int32)",[],1.4580004215240479
+10,daily,LR,7,0,{},"array([121], dtype=int32)",[],1.6111505031585693
+11,daily,LR,7,1,{},"array([121], dtype=int32)",[],1.6985785961151123
+12,daily,LR,7,2,{},"array([114], dtype=int32)",[],1.6094348430633545
+13,daily,LR,7,3,{},"array([105], dtype=int32)",[],1.526716947555542
+14,random,LR-tuned,42,-1,"{'logisticregression__C': 1, 'logisticregression__class_weight': None}","array([114], dtype=int32)",[],19.653120040893555
+15,time,LR-tuned,42,-1,"{'logisticregression__C': 1, 'logisticregression__class_weight': None}","array([117], dtype=int32)",[],17.192250728607178
+16,daily,LR-tuned,42,0,"{'logisticregression__C': 100, 'logisticregression__class_weight': 'balanced'}","array([113], dtype=int32)",[],22.845237970352173
+17,daily,LR-tuned,42,1,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([61], dtype=int32)",[],19.832520961761475
+18,daily,LR-tuned,42,2,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([60], dtype=int32)",[],19.601230144500732
+19,daily,LR-tuned,42,3,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([59], dtype=int32)",[],21.110555171966553
+20,daily,LR-tuned,0,0,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([61], dtype=int32)",[],20.739105224609375
+21,daily,LR-tuned,0,1,"{'logisticregression__C': 1, 'logisticregression__class_weight': 'balanced'}","array([111], dtype=int32)",[],31.465564250946045
+22,daily,LR-tuned,0,2,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([59], dtype=int32)",[],26.271652698516846
+23,daily,LR-tuned,0,3,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([59], dtype=int32)",[],22.605570793151855
+24,daily,LR-tuned,7,0,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': None}","array([69], dtype=int32)",[],24.459232330322266
+25,daily,LR-tuned,7,1,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([61], dtype=int32)",[],23.016291618347168
+26,daily,LR-tuned,7,2,"{'logisticregression__C': 0.01, 'logisticregression__class_weight': 'balanced'}","array([56], dtype=int32)",[],23.50261116027832
+27,daily,LR-tuned,7,3,"{'logisticregression__C': 1, 'logisticregression__class_weight': None}","array([105], dtype=int32)",[],25.14041757583618
+28,random,DT-tuned,42,-1,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],31.699774503707886
+29,time,DT-tuned,42,-1,"{'decisiontreeclassifier__max_depth': None, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],27.098185539245605
+30,daily,DT-tuned,42,0,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],34.11481165885925
+31,daily,DT-tuned,42,1,"{'decisiontreeclassifier__max_depth': None, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],33.54637050628662
+32,daily,DT-tuned,42,2,"{'decisiontreeclassifier__max_depth': None, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],34.30644154548645
+33,daily,DT-tuned,42,3,"{'decisiontreeclassifier__max_depth': None, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],33.30258107185364
+34,daily,DT-tuned,0,0,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],33.17087745666504
+35,daily,DT-tuned,0,1,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],33.11345624923706
+36,daily,DT-tuned,0,2,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],32.98158144950867
+37,daily,DT-tuned,0,3,"{'decisiontreeclassifier__max_depth': None, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],32.7296359539032
+38,daily,DT-tuned,7,0,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],32.18101668357849
+39,daily,DT-tuned,7,1,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 100}",None,[],32.13804912567139
+40,daily,DT-tuned,7,2,"{'decisiontreeclassifier__max_depth': None, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],32.49827480316162
+41,daily,DT-tuned,7,3,"{'decisiontreeclassifier__max_depth': 16, 'decisiontreeclassifier__min_samples_leaf': 20}",None,[],33.736793994903564
+42,random,PolyLR,42,-1,{},"array([244], dtype=int32)",[],14.382413625717163
+43,time,PolyLR,42,-1,{},"array([237], dtype=int32)",[],14.283411264419556
+44,daily,PolyLR,42,0,{},"array([243], dtype=int32)",[],15.164921045303345
+45,daily,PolyLR,42,1,{},"array([264], dtype=int32)",[],15.702360391616821
+46,daily,PolyLR,42,2,{},"array([259], dtype=int32)",[],15.419450044631958
+47,daily,PolyLR,42,3,{},"array([252], dtype=int32)",[],15.335237264633179
+48,daily,PolyLR,0,0,{},"array([279], dtype=int32)",[],16.868556022644043
+49,daily,PolyLR,0,1,{},"array([236], dtype=int32)",[],14.53012490272522
+50,daily,PolyLR,0,2,{},"array([257], dtype=int32)",[],15.140502452850342
+51,daily,PolyLR,0,3,{},"array([256], dtype=int32)",[],15.445346593856812
+52,daily,PolyLR,7,0,{},"array([244], dtype=int32)",[],14.91084098815918
+53,daily,PolyLR,7,1,{},"array([259], dtype=int32)",[],15.440624237060547
+54,daily,PolyLR,7,2,{},"array([250], dtype=int32)",[],15.442660093307495
+55,daily,PolyLR,7,3,{},"array([237], dtype=int32)",[],14.801187992095947
+56,random,kNN,42,-1,{},None,[],13.854044437408447
+57,time,kNN,42,-1,{},None,[],13.975533962249756
+58,daily,kNN,42,0,{},None,[],12.200182437896729
+59,daily,kNN,42,1,{},None,[],13.112404108047485
+60,daily,kNN,42,2,{},None,[],12.682293176651001
+61,daily,kNN,42,3,{},None,[],12.492506742477417
+62,daily,kNN,0,0,{},None,[],12.062248468399048
+63,daily,kNN,0,1,{},None,[],12.657832384109497
+64,daily,kNN,0,2,{},None,[],11.994565725326538
+65,daily,kNN,0,3,{},None,[],10.14185118675232
+66,daily,kNN,7,0,{},None,[],10.230713129043579
+67,daily,kNN,7,1,{},None,[],10.36174750328064
+68,daily,kNN,7,2,{},None,[],9.899648904800415
+69,daily,kNN,7,3,{},None,[],9.639646291732788
+70,random,RF,42,-1,{},None,[],17.2569522857666
+71,time,RF,42,-1,{},None,[],16.571139097213745
+72,daily,RF,42,0,{},None,[],18.455859899520874
+73,daily,RF,42,1,{},None,[],17.57237195968628
+74,daily,RF,42,2,{},None,[],17.6263267993927
+75,daily,RF,42,3,{},None,[],18.36295747756958
+76,daily,RF,0,0,{},None,[],17.4295437335968
+77,daily,RF,0,1,{},None,[],17.516789436340332
+78,daily,RF,0,2,{},None,[],18.21642303466797
+79,daily,RF,0,3,{},None,[],17.739911556243896
+80,daily,RF,7,0,{},None,[],17.391509771347046
+81,daily,RF,7,1,{},None,[],17.414642333984375
+82,daily,RF,7,2,{},None,[],18.162703275680542
+83,daily,RF,7,3,{},None,[],18.358961582183838
+84,random,MLP,42,-1,{},252,[],43.30549454689026
+85,time,MLP,42,-1,{},134,[],25.42871332168579
+86,daily,MLP,42,0,{},161,[],29.885969877243042
+87,daily,MLP,42,1,{},200,[],36.22321057319641
+88,daily,MLP,42,2,{},92,[],16.72943878173828
+89,daily,MLP,42,3,{},203,[],37.18135166168213
+90,daily,MLP,0,0,{},173,[],31.704147577285767
+91,daily,MLP,0,1,{},93,[],17.066309213638306
+92,daily,MLP,0,2,{},112,[],20.661983728408813
+93,daily,MLP,0,3,{},204,[],36.995447635650635
+94,daily,MLP,7,0,{},107,[],19.78236484527588
+95,daily,MLP,7,1,{},141,[],25.63234782218933
+96,daily,MLP,7,2,{},165,[],30.600807905197144
+97,daily,MLP,7,3,{},95,[],17.975019693374634
+98,random,HGB,42,-1,{},100,[],4.881820201873779
+99,time,HGB,42,-1,{},100,[],4.4773430824279785
+100,daily,HGB,42,0,{},100,[],4.476184844970703
+101,daily,HGB,42,1,{},100,[],4.537496328353882
+102,daily,HGB,42,2,{},100,[],4.439608573913574
+103,daily,HGB,42,3,{},100,[],4.422673225402832
+104,daily,HGB,0,0,{},100,[],4.4525017738342285
+105,daily,HGB,0,1,{},100,[],4.510484933853149
+106,daily,HGB,0,2,{},100,[],4.510453224182129
+107,daily,HGB,0,3,{},100,[],4.647916555404663
+108,daily,HGB,7,0,{},100,[],4.448871850967407
+109,daily,HGB,7,1,{},100,[],4.511928558349609
+110,daily,HGB,7,2,{},100,[],4.545841693878174
+111,daily,HGB,7,3,{},100,[],4.448283910751343
+112,random,HGB-tuned,42,-1,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],122.74072980880737
+113,time,HGB-tuned,42,-1,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],88.05597043037415
+114,daily,HGB-tuned,42,0,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],107.24443554878235
+115,daily,HGB-tuned,42,1,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],104.42587184906006
+116,daily,HGB-tuned,42,2,"{'histgradientboostingclassifier__l2_regularization': 0, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],103.25774359703064
+117,daily,HGB-tuned,42,3,"{'histgradientboostingclassifier__l2_regularization': 0, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],115.29815578460693
+118,daily,HGB-tuned,0,0,"{'histgradientboostingclassifier__l2_regularization': 0, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],148.90003967285156
+119,daily,HGB-tuned,0,1,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],144.11353063583374
+120,daily,HGB-tuned,0,2,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],141.84193468093872
+121,daily,HGB-tuned,0,3,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],128.06968021392822
+122,daily,HGB-tuned,7,0,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.05, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],135.34244513511658
+123,daily,HGB-tuned,7,1,"{'histgradientboostingclassifier__l2_regularization': 0, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],109.12303972244263
+124,daily,HGB-tuned,7,2,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],113.2107880115509
+125,daily,HGB-tuned,7,3,"{'histgradientboostingclassifier__l2_regularization': 1, 'histgradientboostingclassifier__learning_rate': 0.1, 'histgradientboostingclassifier__max_leaf_nodes': 31}",100,[],149.65232682228088
+126,window3,LR,42,0,{},"array([196], dtype=int32)",[],4.1340508460998535
+127,window3,LR,42,1,{},"array([194], dtype=int32)",[],3.8013768196105957
+128,window3,LR,42,2,{},"array([173], dtype=int32)",[],2.8291265964508057
+129,window3,LR,42,3,{},"array([175], dtype=int32)",[],2.747205972671509
+130,window3,LR,0,0,{},"array([173], dtype=int32)",[],2.6833980083465576
+131,window3,LR,0,1,{},"array([184], dtype=int32)",[],2.638943672180176
+132,window3,LR,0,2,{},"array([175], dtype=int32)",[],2.880445718765259
+133,window3,LR,0,3,{},"array([177], dtype=int32)",[],3.0062813758850098
+134,window3,LR,7,0,{},"array([186], dtype=int32)",[],3.4070918560028076
+135,window3,LR,7,1,{},"array([171], dtype=int32)",[],2.7765941619873047
+136,window3,LR,7,2,{},"array([166], dtype=int32)",[],2.4072659015655518
+137,window3,LR,7,3,{},"array([170], dtype=int32)",[],2.4781887531280518
+138,window7,LR,42,0,{},"array([211], dtype=int32)",[],2.9469876289367676
+139,window7,LR,42,1,{},"array([250], dtype=int32)",[],3.2492997646331787
+140,window7,LR,42,2,{},"array([141], dtype=int32)",[],2.0962910652160645
+141,window7,LR,42,3,{},"array([202], dtype=int32)",[],2.8242576122283936
+142,window7,LR,0,0,{},"array([154], dtype=int32)",[],2.2379579544067383
+143,window7,LR,0,1,{},"array([223], dtype=int32)",[],3.040286064147949
+144,window7,LR,0,2,{},"array([226], dtype=int32)",[],2.9207894802093506
+145,window7,LR,0,3,{},"array([184], dtype=int32)",[],2.718083381652832
+146,window7,LR,7,0,{},"array([179], dtype=int32)",[],2.7604105472564697
+147,window7,LR,7,1,{},"array([202], dtype=int32)",[],3.267073392868042
+148,window7,LR,7,2,{},"array([138], dtype=int32)",[],2.030029773712158
+149,window7,LR,7,3,{},"array([192], dtype=int32)",[],3.218435287475586
+150,window14,LR,42,0,{},"array([230], dtype=int32)",[],3.717428207397461
+151,window14,LR,42,1,{},"array([212], dtype=int32)",[],2.965787172317505
+152,window14,LR,42,2,{},"array([160], dtype=int32)",[],2.288695812225342
+153,window14,LR,42,3,{},"array([178], dtype=int32)",[],2.5751357078552246
+154,window14,LR,0,0,{},"array([167], dtype=int32)",[],2.2885522842407227
+155,window14,LR,0,1,{},"array([183], dtype=int32)",[],2.903303861618042
+156,window14,LR,0,2,{},"array([210], dtype=int32)",[],2.7467148303985596
+157,window14,LR,0,3,{},"array([212], dtype=int32)",[],2.7855279445648193
+158,window14,LR,7,0,{},"array([198], dtype=int32)",[],2.6466755867004395
+159,window14,LR,7,1,{},"array([235], dtype=int32)",[],3.839353084564209
+160,window14,LR,7,2,{},"array([173], dtype=int32)",[],2.8280463218688965
+161,window14,LR,7,3,{},"array([183], dtype=int32)",[],2.544396162033081
+162,window30,LR,42,0,{},"array([224], dtype=int32)",[],3.266953468322754
+163,window30,LR,42,1,{},"array([275], dtype=int32)",[],3.520331621170044
+164,window30,LR,42,2,{},"array([230], dtype=int32)",[],2.967320680618286
+165,window30,LR,42,3,{},"array([219], dtype=int32)",[],3.185729503631592
+166,window30,LR,0,0,{},"array([252], dtype=int32)",[],4.560789585113525
+167,window30,LR,0,1,{},"array([247], dtype=int32)",[],3.966648578643799
+168,window30,LR,0,2,{},"array([233], dtype=int32)",[],3.5113611221313477
+169,window30,LR,0,3,{},"array([221], dtype=int32)",[],2.9345359802246094
+170,window30,LR,7,0,{},"array([220], dtype=int32)",[],3.1183230876922607
+171,window30,LR,7,1,{},"array([265], dtype=int32)",[],3.7056212425231934
+172,window30,LR,7,2,{},"array([269], dtype=int32)",[],3.5885353088378906
+173,window30,LR,7,3,{},"array([169], dtype=int32)",[],2.70758056640625
+174,window90,LR,42,0,{},"array([212], dtype=int32)",[],3.386823892593384
+175,window90,LR,42,1,{},"array([288], dtype=int32)",[],3.837472438812256
+176,window90,LR,42,2,{},"array([204], dtype=int32)",[],2.9162604808807373
+177,window90,LR,42,3,{},"array([186], dtype=int32)",[],2.5711629390716553
+178,window90,LR,0,0,{},"array([233], dtype=int32)",[],3.4212119579315186
+179,window90,LR,0,1,{},"array([204], dtype=int32)",[],3.2847890853881836
+180,window90,LR,0,2,{},"array([205], dtype=int32)",[],2.914177894592285
+181,window90,LR,0,3,{},"array([221], dtype=int32)",[],2.9951364994049072
+182,window90,LR,7,0,{},"array([227], dtype=int32)",[],2.91467022895813
+183,window90,LR,7,1,{},"array([239], dtype=int32)",[],3.3084309101104736
+184,window90,LR,7,2,{},"array([269], dtype=int32)",[],4.627636909484863
+185,window90,LR,7,3,{},"array([132], dtype=int32)",[],2.841769218444824
+186,window365,LR,42,0,{},"array([124], dtype=int32)",[],1.7299273014068604
+187,window365,LR,42,1,{},"array([130], dtype=int32)",[],1.7880232334136963
+188,window365,LR,42,2,{},"array([125], dtype=int32)",[],1.6933469772338867
+189,window365,LR,42,3,{},"array([75], dtype=int32)",[],1.2501320838928223
+190,window365,LR,0,0,{},"array([135], dtype=int32)",[],2.000077486038208
+191,window365,LR,0,1,{},"array([131], dtype=int32)",[],1.8592891693115234
+192,window365,LR,0,2,{},"array([65], dtype=int32)",[],1.6630289554595947
+193,window365,LR,0,3,{},"array([118], dtype=int32)",[],2.4954659938812256
+194,window365,LR,7,0,{},"array([95], dtype=int32)",[],1.9507248401641846
+195,window365,LR,7,1,{},"array([135], dtype=int32)",[],2.3521976470947266
+196,window365,LR,7,2,{},"array([146], dtype=int32)",[],2.486372470855713
+197,window365,LR,7,3,{},"array([59], dtype=int32)",[],1.8119418621063232
+198,window3,HGB,42,0,{},100,[],6.560954809188843
+199,window3,HGB,42,1,{},100,[],6.366950273513794
+200,window3,HGB,42,2,{},100,[],7.2387001514434814
+201,window3,HGB,42,3,{},100,[],6.428005218505859
+202,window3,HGB,0,0,{},100,[],5.974043846130371
+203,window3,HGB,0,1,{},100,[],6.085345983505249
+204,window3,HGB,0,2,{},100,[],6.232715129852295
+205,window3,HGB,0,3,{},100,[],6.25871729850769
+206,window3,HGB,7,0,{},100,[],6.111763954162598
+207,window3,HGB,7,1,{},100,[],6.239835262298584
+208,window3,HGB,7,2,{},100,[],6.20202374458313
+209,window3,HGB,7,3,{},100,[],6.015408277511597
+210,window7,HGB,42,0,{},100,[],5.943377733230591
+211,window7,HGB,42,1,{},100,[],6.115927219390869
+212,window7,HGB,42,2,{},100,[],6.011695861816406
+213,window7,HGB,42,3,{},100,[],7.295047283172607
+214,window7,HGB,0,0,{},100,[],6.043785095214844
+215,window7,HGB,0,1,{},100,[],6.123127698898315
+216,window7,HGB,0,2,{},100,[],5.817124366760254
+217,window7,HGB,0,3,{},100,[],5.983191967010498
+218,window7,HGB,7,0,{},100,[],6.103464365005493
+219,window7,HGB,7,1,{},100,[],6.153042554855347
+220,window7,HGB,7,2,{},100,[],6.049853563308716
+221,window7,HGB,7,3,{},100,[],6.022672653198242
+222,window14,HGB,42,0,{},100,[],5.853351831436157
+223,window14,HGB,42,1,{},100,[],5.90518856048584
+224,window14,HGB,42,2,{},100,[],5.93442177772522
+225,window14,HGB,42,3,{},100,[],6.0190749168396
+226,window14,HGB,0,0,{},100,[],6.374142408370972
+227,window14,HGB,0,1,{},100,[],5.825538158416748
+228,window14,HGB,0,2,{},100,[],5.910873889923096
+229,window14,HGB,0,3,{},100,[],5.9133079051971436
+230,window14,HGB,7,0,{},100,[],5.941467523574829
+231,window14,HGB,7,1,{},100,[],5.9784417152404785
+232,window14,HGB,7,2,{},100,[],6.038013458251953
+233,window14,HGB,7,3,{},100,[],6.0166943073272705
+234,window30,HGB,42,0,{},100,[],6.019610166549683
+235,window30,HGB,42,1,{},100,[],5.789956569671631
+236,window30,HGB,42,2,{},100,[],5.817431449890137
+237,window30,HGB,42,3,{},100,[],5.618270635604858
+238,window30,HGB,0,0,{},100,[],6.000849723815918
+239,window30,HGB,0,1,{},100,[],5.984647035598755
+240,window30,HGB,0,2,{},100,[],5.924906969070435
+241,window30,HGB,0,3,{},100,[],6.014008045196533
+242,window30,HGB,7,0,{},100,[],6.18412184715271
+243,window30,HGB,7,1,{},100,[],6.148198366165161
+244,window30,HGB,7,2,{},100,[],5.896352052688599
+245,window30,HGB,7,3,{},100,[],5.85391902923584
+246,window90,HGB,42,0,{},100,[],5.829070329666138
+247,window90,HGB,42,1,{},100,[],6.164404630661011
+248,window90,HGB,42,2,{},100,[],5.989251375198364
+249,window90,HGB,42,3,{},100,[],5.697967767715454
+250,window90,HGB,0,0,{},100,[],6.06646203994751
+251,window90,HGB,0,1,{},100,[],5.692445993423462
+252,window90,HGB,0,2,{},100,[],5.899683952331543
+253,window90,HGB,0,3,{},100,[],6.004825830459595
+254,window90,HGB,7,0,{},100,[],6.121667861938477
+255,window90,HGB,7,1,{},100,[],6.1349875926971436
+256,window90,HGB,7,2,{},100,[],6.191242456436157
+257,window90,HGB,7,3,{},100,[],5.551877975463867
+258,window365,HGB,42,0,{},100,[],6.58186149597168
+259,window365,HGB,42,1,{},100,[],6.230379104614258
+260,window365,HGB,42,2,{},100,[],6.479950904846191
+261,window365,HGB,42,3,{},100,[],5.215131759643555
+262,window365,HGB,0,0,{},100,[],5.200726747512817
+263,window365,HGB,0,1,{},100,[],5.27097487449646
+264,window365,HGB,0,2,{},100,[],5.169244289398193
+265,window365,HGB,0,3,{},100,[],5.135411024093628
+266,window365,HGB,7,0,{},100,[],6.687261343002319
+267,window365,HGB,7,1,{},100,[],5.436896324157715
+268,window365,HGB,7,2,{},100,[],6.073710918426514
+269,window365,HGB,7,3,{},100,[],5.0871827602386475
+270,policy_full,HGB,42,0,{},100,[],5.339503049850464
+271,policy_full,HGB,42,1,{},100,[],5.10853910446167
+272,policy_full,HGB,42,2,{},100,[],5.155330419540405
+273,policy_full,HGB,42,3,{},100,[],5.35912299156189
+274,policy_full+flags,HGB,42,0,{},100,[],8.873332262039185
+275,policy_full+flags,HGB,42,1,{},100,[],8.93719220161438
+276,policy_full+flags,HGB,42,2,{},100,[],8.961991310119629
+277,policy_full+flags,HGB,42,3,{},100,[],8.959177494049072

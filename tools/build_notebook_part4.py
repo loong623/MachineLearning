@@ -1,9 +1,8 @@
-"""Part 4 of the project notebook: prediction (training and testing). Assembled by tools/build_notebook.py."""
+"""Self-contained notebook cells; assemble with tools/build_notebook.py."""
 import nbformat as nbf
-
-cells = []
-md = lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
-code = lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
+cells=[]
+md=lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
+code=lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
 
 md(r"""
 ## 4. Prediction: Training and Testing
@@ -16,7 +15,7 @@ md(r"""
   (Tropical 7.6% … Subtropical 32.2%), so besides accuracy we always report **macro-F1** (every zone counts equally).
 * **Features**: the 20 `core` features from Part 1 (no station-specific sensors, no missing indicators).
 * **Logistic Regression (multinomial)** — a linear model: one weight vector per zone, softmax over the five scores.
-  It is the natural linear baseline, gives calibrated-looking probabilities (needed for ROC in Part 5), and its
+  It is the natural linear baseline, gives class probabilities (used for ROC in Part 5), and its
   coefficients are interpretable. Default regularisation `C = 1`.
 * **Decision Tree (CART, Gini)** — a non-linear model made of axis-aligned threshold rules such as
   "MinTemp > 18.5 °C". It can represent interactions that LR cannot (e.g. *hot and dry* vs *hot and humid*), and
@@ -36,6 +35,7 @@ scaling statistics are learned from the training set only.
 Both splits were created in Section 1.6 and are reused here. The grouped test set contains 15 stations from all
 5 zones.
 """)
+
 code(r"""
 X_all = F[FEATURE_SETS["core"]]
 ALL = np.arange(len(df))
@@ -59,8 +59,9 @@ md(r"""
 
 Training is a single `fit` on the training rows. For LR, `lbfgs` minimises the multinomial cross-entropy plus an
 L2 penalty `‖w‖² / (2C)`. For the tree, CART greedily chooses at every node the feature and threshold that most
-reduce Gini impurity, and keeps splitting until every leaf is pure (default settings).
+reduce Gini impurity, and continues until no admissible split remains (normally pure leaves). Identical predictor rows with different labels can leave a small training error even without explicit pruning.
 """)
+
 code(r"""
 import time
 models_p4, fit_info = {}, []
@@ -74,12 +75,14 @@ for split, (a, b) in SPLITS.items():
         fit_info.append(info); models_p4[(split, name)] = m
 pd.DataFrame(fit_info)
 """)
+
 md(r"""
 The unconstrained tree grows to a depth of about 35 with roughly 18,000 leaves for ~100,000 training days, i.e.
 on average about 5–6 training days per leaf. This already suggests memorisation.
 
 ### 4.4 Evaluation on the training set, test set and entire set
 """)
+
 code(r"""
 from sklearn.metrics import confusion_matrix
 
@@ -101,6 +104,7 @@ p4_table.pivot_table(index=["split", "model"], columns="set", values=["accuracy"
     [("accuracy", "train"), ("accuracy", "test"), ("accuracy", "entire"),
      ("macro-F1", "train"), ("macro-F1", "test"), ("macro-F1", "entire")]]
 """)
+
 code(r"""
 def plot_cm(ax, y_true, y_pred, title):
     cm = confusion_matrix(y_true, y_pred, labels=ZONE_ORDER)
@@ -121,6 +125,7 @@ for i, name in enumerate(["LR", "DT"]):
 plt.suptitle("Confusion matrices, random 70/30 split (row-normalised = recall; counts in brackets)", fontsize=13)
 plt.tight_layout(); savefig("p4_confusion_random"); plt.show()
 """)
+
 code(r"""
 fig, axes = plt.subplots(1, 2, figsize=(13, 5.5))
 for ax, name in zip(axes, ["LR", "DT"]):
@@ -131,13 +136,11 @@ plt.tight_layout(); savefig("p4_confusion_grouped"); plt.show()
 """)
 
 md(r"""
-### 4.5 Visualising the decision boundary
+### 4.5 Illustrative decision boundaries
 
-The models live in 20 dimensions, so we draw the boundary of the same model classes trained on **two features
-only**. We picked the pair with the best two-feature LR test macro-F1 among the interpretable candidates:
-`MinTemp` (night temperature) and `Humidity3pm` (afternoon humidity). The decision tree is shown twice: with
-default settings, and with `max_depth = 6` to show what limiting complexity does. Points are 1,500 random test days.
+MinTemp and Humidity3pm were chosen using test comparisons in the earlier exploratory version. The pair is retained only to illustrate model geometry; the displayed two-feature test score is not an independent feature-selection result and does not choose the final model. A depth-6 tree is a fixed visual contrast, not a tuned optimum.
 """)
+
 code(r"""
 pair = ["MinTemp", "Humidity3pm"]
 X2_tr, X2_te = F.iloc[rand_tr][pair], F.iloc[rand_te][pair]
@@ -164,52 +167,11 @@ handles = [plt.Line2D([], [], marker="s", ls="", color=ZONE_COLORS[z], label=z) 
 axes[0].legend(handles=handles, loc="upper left", fontsize=9)
 plt.tight_layout(); savefig("p4_decision_boundary"); plt.show()
 """)
+
 md(r"""
-* **LR** draws straight boundaries: warm nights (MinTemp > ~22 °C) → Tropical, low afternoon humidity → Arid,
-  cold nights → Oceanic, and a wide middle band → Subtropical. **No region is assigned to Mediterranean at all**:
-  with only these two features, Mediterranean days are never the most probable class anywhere.
-* **The default tree** cuts the plane into thousands of tiny axis-aligned rectangles; many of them contain a single
-  training day, which is overfitting made visible.
-* **The depth-6 tree** keeps the large structures (the tropical corner, the dry strip) with at most 64 leaves,
-  carves out a Mediterranean box (mild nights, humid afternoons) that LR cannot represent, and has the highest
-  test score of the three (0.474 vs 0.412 for the default tree and 0.390 for LR).
+### 4.6 Interpreting train, test and entire-set results
 
-### 4.6 Interpretation of the results on the training, test and entire sets
+A large training/test gap for the unrestricted tree indicates overfitting under this protocol. Similar LR scores are consistent with limited model flexibility, but do not identify bias as the sole source of error or rule out overfitting with correlated observations.
 
-*All numbers refer to the tables above.*
-
-**Logistic regression.** Training, test and entire-set scores are almost the same (accuracy ≈ 0.60 on the
-random split). A linear model with 105 parameters cannot memorise 100,000 days: its errors come from **bias**
-(the zones are not linearly separable), not from variance.
-
-**Decision tree.** It is perfect on the training set (accuracy 1.000) but only ≈ 0.65 on the random test set:
-a classic case of **overfitting**. Even so, its test score is higher than LR's, because the tree can model
-non-linear interactions.
-
-**The entire set is not an independent estimate.** It is 70% training rows and 30% test rows, so
-`entire ≈ 0.7 · train + 0.3 · test`. For LR this changes nothing; for the tree it produces a misleading 0.895.
-Only the test column measures generalisation.
-
-**Unseen stations.** On the grouped split both models lose accuracy, but the tree loses far more (test accuracy
-falls from 0.65 to 0.53) and drops *below* LR (0.56). Part of what the tree learned on the random split was
-**station-specific** (it recognised the typical days of each station), and that knowledge does not transfer to new
-stations. LR, which cannot memorise, is the more robust model here.
-
-**Which zones are confused?** Tropical is recognised best in every test matrix (recall 0.77–0.92); its errors
-go almost only to Subtropical (the warm, humid Queensland coast). The largest confusion is between Mediterranean
-and Oceanic (up to 41% of Mediterranean test days on unseen stations are called Oceanic), as expected from the
-t-SNE map (Part 2) and the clusters (Part 3). Arid has the lowest recall (0.34–0.50); its days are most often called
-Subtropical, because the inland Subtropical stations (Moree, Wagga Wagga) have hot, dry summers too.
-
-### 4.7 Comparison of the two models
-
-| | Logistic Regression | Decision Tree (default) |
-|---|---|---|
-| Random test accuracy / macro-F1 | ≈ 0.60 / 0.62 | ≈ 0.65 / 0.67 |
-| Unseen-station test accuracy / macro-F1 | ≈ 0.56 / 0.56 | ≈ 0.53 / 0.54 |
-| Train − test gap | ≈ 0 (high bias, low variance) | ≈ 0.35 (low bias, high variance) |
-| Boundary shape | linear | axis-aligned, very fragmented |
-
-Neither model is good enough yet. Part 5 computes the full metrics, draws the ROC curves and improves both models
-with validation.
+Entire-set accuracy is the row-count-weighted average of train/test accuracies; macro-F1 is nonlinear and must be recomputed from pooled predictions. Entire-set scores are not independent generalisation estimates. Random and grouped splits address different populations: their difference is not a causal measure of station memorisation. These historical holdouts are exploratory; Part 5/6 uses explicitly nested group evaluation.
 """)

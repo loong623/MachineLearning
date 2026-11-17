@@ -1,0 +1,16 @@
+{
+  "run_id": "0ed824d64a3cdbe2",
+  "code_sha256": "907b3a6000ee0ee1fe9e76f86450fbf910a8dc93cd1ec1d782bd4ceadc2e7a89",
+  "rows": 142451,
+  "stations": 48,
+  "outer_seeds": [
+    42,
+    0,
+    7
+  ],
+  "outer_folds": 4,
+  "metric": "pooled fixed-five macro-F1",
+  "cache_hits": 0,
+  "cache_misses": 335,
+  "completed_utc": "2026-11-17T15:20:26.901611+00:00"
+}
