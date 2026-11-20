@@ -1,0 +1,6 @@
+Zone,station_years,candidate_years,median_min_valid,coverage
+Tropical,25,35,21.0,0.7142857142857143
+Arid,42,56,21.0,0.75
+Subtropical,106,142,21.0,0.7464788732394366
+Mediterranean,77,103,21.0,0.7475728155339806
+Oceanic,78,108,21.0,0.7222222222222222

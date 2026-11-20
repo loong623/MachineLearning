@@ -2,7 +2,7 @@
 
 Run from the project root:
     python tools/build_notebook.py
-    python -m nbconvert --to notebook --execute --inplace project_XX_TaskA.ipynb
+    python tools/execute_notebook.py --fresh
 Each tools/build_notebook_partN.py defines a list `cells`; parts are concatenated in order.
 """
 import importlib
@@ -12,9 +12,9 @@ from pathlib import Path
 
 import nbformat as nbf
 
-NB_PATH = Path("project_XX_TaskA.ipynb")   # rename XX to our groupID before submission
+NB_PATH = Path("project_7_TaskA.ipynb")
 PARTS = ["build_notebook_part1", "build_notebook_part2", "build_notebook_part3", "build_notebook_part4",
-         "build_notebook_part5", "build_notebook_part6"]
+         "build_notebook_part5", "build_notebook_part6", "build_notebook_part7"]
 
 
 def main():

@@ -13,7 +13,7 @@ from nbclient import NotebookClient
 from jupyter_client import KernelManager
 
 parser=argparse.ArgumentParser()
-parser.add_argument('--notebook',default='project_XX_TaskA.ipynb')
+parser.add_argument('--notebook',default='project_7_TaskA.ipynb')
 parser.add_argument('--fresh',action='store_true',help='Ignore all computed caches, including t-SNE.')
 args=parser.parse_args()
 path=Path(args.notebook).resolve()

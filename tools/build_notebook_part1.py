@@ -5,19 +5,17 @@ md=lambda s: cells.append(nbf.v4.new_markdown_cell(s.strip()))
 code=lambda s: cells.append(nbf.v4.new_code_cell(s.strip()))
 
 md(r"""
-# DSAA2011 Course Project (Task A) — *"Where am I?"*
-## Identifying Australia's climate zone from a single day of weather
+# DSAA2011 Course Project (Task A) — *"From Weather Snapshots to Seasonal Climate Signatures"*
+## Recovering Australia's climate zones from weather observations alone
 
-**Question.** Given the weather observations of one day at one station (temperature, humidity, pressure, wind, rain),
-can we tell which climate zone the station belongs to?
+**Question.** How much of an externally assigned climate zone can be recovered from weather when a single day is
+treated as a baseline and four seasonal windows are combined into an annual weather-pattern proxy?
 
 | Step | Question it answers |
 |---|---|
-| Part 1 Preprocessing | What does the data look like, and which preprocessing choices could leak the answer? |
-| Part 2 t-SNE | Do days from different climate zones separate naturally in feature space? |
-| Part 3 Clustering | Without labels, can clustering rediscover the climate zones? |
-| Part 4 Prediction | With labels, how well can simple models classify the zone of a day? |
-| Part 5 Evaluation | Which zones are confused, and does the model generalise to **stations it has never seen**? |
+| Parts 1–5 Mandatory tasks | Preprocess, visualise, cluster and predict with the required daily-weather baseline. |
+| Part 6 History sensitivity | How does the answer change with trailing history, feature engineering and model flexibility? |
+| Part 7 Main exploration | Do four seasonal weather windows recover climate-zone information more faithfully? |
 
 **Target (`Zone`, 5 classes)** is derived from the Köppen-Geiger classification of each station
 (groups A and B kept whole, group C split into Cfa / Cs / Cfb). See Section 0.2.
@@ -69,7 +67,7 @@ def savefig(name):
 import pickle, json, os, platform, importlib.metadata, time
 from threadpoolctl import threadpool_limits
 _thread_limit = threadpool_limits(limits=2)
-nb_file = Path("project_XX_TaskA.ipynb")
+nb_file = Path("project_7_TaskA.ipynb")
 nb_source = json.loads(nb_file.read_text(encoding="utf-8"))
 code_digest = hashlib.sha256("\n".join("".join(c["source"]) for c in nb_source["cells"] if c["cell_type"] == "code").encode()).hexdigest()
 file_digests = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in [RAW_CSV, DATA_DIR / "processed/location_zone.csv", DATA_DIR / "external/location_station.csv"]}

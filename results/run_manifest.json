@@ -1,6 +1,6 @@
 {
-  "run_id": "0ed824d64a3cdbe2",
-  "code_sha256": "907b3a6000ee0ee1fe9e76f86450fbf910a8dc93cd1ec1d782bd4ceadc2e7a89",
+  "run_id": "f67d019ce7acf9e9",
+  "code_sha256": "179d4d0f51b196bbde187de730ac834c36b0d89a21d69f30081fd186b2cb2b83",
   "rows": 142451,
   "stations": 48,
   "outer_seeds": [
@@ -10,7 +10,15 @@
   ],
   "outer_folds": 4,
   "metric": "pooled fixed-five macro-F1",
-  "cache_hits": 0,
-  "cache_misses": 335,
-  "completed_utc": "2026-11-17T15:20:26.901611+00:00"
+  "cache_hits": 383,
+  "cache_misses": 0,
+  "completed_utc": "2026-11-20T08:28:31.819614+00:00",
+  "seasonal_rows": 328,
+  "seasonal_stations": 48,
+  "seasonal_windows": [
+    "mar_equinox",
+    "jun_solstice",
+    "sep_equinox",
+    "dec_solstice"
+  ]
 }

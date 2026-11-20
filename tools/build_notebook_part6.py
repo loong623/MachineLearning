@@ -279,7 +279,11 @@ arrays={'y':np.array(y,dtype=str),'station':groups.to_numpy(dtype=str),'date':df
 for k,p in BOOT_MODELS.items():arrays[k]=np.array(p,dtype=str)
 for (kind,seed),r in OOF.items():arrays[f'daily_{kind}_s{seed}']=np.array(r['pred'],dtype=str)
 for (kind,N,seed),r in WINDOW_OOF.items():arrays[f'window_{kind}_{N}_s{seed}']=np.array(r['pred'],dtype=str)
-np.savez_compressed(RESULT_DIR/'predictions.npz',**arrays)
+pred_path = RESULT_DIR / 'predictions.npz'
+pred_tmp = RESULT_DIR / 'predictions.base.tmp.npz'
+if pred_tmp.exists(): pred_tmp.unlink()
+np.savez_compressed(pred_tmp, **arrays)
+pred_tmp.replace(pred_path)
 manifest={'run_id':RUN_ID,'code_sha256':code_digest,'rows':len(y),'stations':len(st_names),'outer_seeds':OUTER_SEEDS,'outer_folds':4,'metric':'pooled fixed-five macro-F1','cache_hits':sum(e['hit'] for e in CACHE_EVENTS),'cache_misses':sum(not e['hit'] for e in CACHE_EVENTS),'completed_utc':pd.Timestamp.now(tz='UTC').isoformat()}
 (RESULT_DIR/'run_manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
 print(json.dumps(manifest,indent=2))

@@ -26,7 +26,7 @@ os.chdir(ROOT)
 threadpool_limits(2)
 manifest=json.loads(Path('results/run_manifest.json').read_text())
 run=manifest['run_id']
-nb=nbformat.read('project_XX_TaskA.ipynb',as_version=4)
+nb=nbformat.read('project_7_TaskA.ipynb',as_version=4)
 digest=hashlib.sha256('\n'.join(c.source for c in nb.cells if c.cell_type=='code').encode()).hexdigest()
 assert digest==manifest['code_sha256']
 zones=pd.read_csv('data/processed/location_zone.csv')

@@ -1,6 +1,13 @@
-# Review-informed experiment protocol (2026-11-17)
+# Review-informed experiment protocol (2026-11-20, Group 7 seasonal redesign)
 
 The target remains five project-defined Köppen groups inferred from Australian weather. This revision is designed after inspecting earlier results: it is not preregistration or a new external validation cohort. Raw observations and the station-to-map annotation remain fixed.
+
+The daily snapshot is the mandatory baseline and motivation. The main open-ended representation is one station-year weather
+signature made from four fixed 21-day windows centred on 20 March, 21 June, 22 September and 21 December. Each window
+contributes feature means and standard deviations, rainy-day fraction and temperature-range statistics. A row is retained
+only when every window has at least seven valid days. The dates are a transparent feature-engineering choice and a proxy
+for an annual weather pattern; they are not treated as a new climate ground truth. The signature contains no coordinates,
+station IDs, year or target label.
 
 - Unit of generalisation: a withheld station from this 48-station network. No claim about arbitrary Australian sites or independent climate ground truth.
 - Primary metric: pooled out-of-fold macro-F1 over the fixed five labels. Report per-class metrics, station-balanced macro-F1 (each station has equal total sample weight), station accuracy, and fold scores separately. All training/validation/test scorers use the same five-label definition and zero_division=0.
@@ -13,5 +20,6 @@ The target remains five project-defined Köppen groups inferred from Australian 
 - Uncertainty: paired station-stratified bootstrap of the primary fixed OOF predictions, preserving all days of each station. Intervals are conditional on the fitted procedures and observed network; they exclude training/selection variability. Repeated-fold SD is explicitly not a confidence interval. No significance/equivalence claim based on fold win counts.
 - Clustering: disclose label-balanced sampling, post-hoc selection rule, low silhouette, and dependence of daily subsamples. Add threshold/metric sensitivity, natural-frequency sampling and station/year-block perturbations. Day/station ARIs are not a controlled aggregation effect.
 - Reproduction: new cache namespace with hashes of all executable notebook cells, raw data, station annotation, metadata and installed distributions. Fresh execution must record cache hits/misses, environment, fold assignments, predictions and results. Report numbers are generated from results, not copied from old prose.
+- Seasonal comparison: station-year rows use the same station-held-out outer folds as daily models. LR, tuned DT, RF and tuned HGB are compared; tuned models use three station-disjoint inner folds. Seasonal t-SNE is descriptive, and K-means/Ward sweeps report silhouette, Davies--Bouldin and external ARI for $k=2,\ldots,7$. A matched baseline votes daily HGB predictions nearest the four seasonal centres. Seasonal coverage and per-class metrics are exported before report generation.
 
 Remaining structural limits: only four tropical stations; manual station matching; one climate raster; historical exploratory decisions cannot be undone; no new stations or independent map are acquired. These limits must remain explicit in the report.

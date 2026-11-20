@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import nbformat
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--notebook", default="project_XX_TaskA.ipynb")
+ap.add_argument("--notebook", default="project_7_TaskA.ipynb")
 ap.add_argument("--budget", type=float, default=150)
 args = ap.parse_args()
 
