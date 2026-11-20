@@ -70,7 +70,7 @@
 | `data/external/`, `data/processed/location_zone.csv` | BoM 原始站表、人工匹配与栅格标签 |
 | `data/processed/audit_cache/`, `tsne_audit/` | 新计算缓存，Git 忽略；删除后可重算 |
 | `figures/` | notebook 生成的图；报告只引用本轮确认的图 |
-| `data/processed/cache/`, `tsne/`, `src/`, `explore/`, `report/old/`, `report/article_draft/` | 历史记录，不是当前实验依据 |
+| `data/processed/cache/`, `tsne/`, `src/`, `explore/` | 历史计算缓存与开发脚本，不是当前实验依据 |
 | `AI_LOG.md`, `DECISIONS.md` | 原有记录保留，新条目明确更正旧结论 |
 
 ## 解释边界
