@@ -206,3 +206,11 @@
 - **代码修复**：修复季节模型内层选择的索引隔离问题和 Windows `.npz` 原子写入问题；把工具脚本的默认 Notebook 路径统一为 `project_7_TaskA.ipynb`。
 - **验证**：`tools/verify_results.py` 通过代码、数据、站点隔离、特征选择隔离、内层选择和预测指标重算检查；Notebook 代码单元全部执行成功；报告使用 Tectonic 编译成功并完成渲染检查。
 - **关键结果**：日级 RF/HGB macro-F1 为 0.665/0.659；季节 LR 为 0.861、macro-AUC 为 0.973；季节 HGB 为 0.807；四季中心日模型投票为 0.759；季节 K-means 最佳外部 ARI 为 0.314。结果和限制已同步到 README、报告和演示文稿。
+
+## 2026-11-20 #15 独立建议复核与报告修订
+
+- **复核结论**：建议 1–4 均有可参考之处。修正后的同模型 matched baseline 是日 LR 0.702 → 季节 LR 0.861（+0.159），日 HGB 0.759 → 季节 HGB 0.807（+0.047）；撤回跨模型的 0.101 like-for-like 说法。
+- **报告补充**：加入 Task 4 train/test/entire 表、随机混淆矩阵、二维决策边界和 tuned LR/DT 验证表；补充 12 折季节 LR `0.850±0.085`、范围 `0.680–0.975`，并说明条件 bootstrap 区间的限制。
+- **聚类修正**：报告明确 k=7 的季节 ARI 是看过外部标签后的 post-hoc 描述，内部指标更偏好 k=2。
+- **可视化修正**：将混合单位季节特征图改为逐特征标准化热图；同时修复 LaTeX 宏后的空格。
+- **实现**：新增 `tools/compute_matched_votes.py` 和 `results/seasonal_matched_baseline.csv` 中的 LR 四快照投票行；Notebook 增加同模型比较说明；presentation 更新同模型提升文字；报告重新编译成功。

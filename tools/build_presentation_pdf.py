@@ -107,7 +107,7 @@ with PdfPages(OUT) as pdf:
 
     fig = slide(pdf, "Why the comparison is meaningful", "Representation and model flexibility are separated.", 10)
     image(fig, "p7_seasonal_tsne.png", [.06, .20, .50, .62])
-    bullets(fig, ["A daily HGB prediction nearest each seasonal centre is voted across four snapshots.", "That matched daily baseline reaches 0.759 macro-F1.", "Seasonal LR reaches 0.861: summaries across windows add information.", "Seasonal t-SNE is descriptive because years repeat within stations."], x=.62, y=.72, width=.32, size=18, gap=.055)
+    bullets(fig, ["A daily HGB prediction nearest each seasonal centre is voted across four snapshots.", "HGB: 0.759 to 0.807 (+0.047); LR: 0.702 to 0.861 (+0.159).", "Same-model comparisons support the value of seasonal summaries.", "Seasonal t-SNE is descriptive because years repeat within stations."], x=.62, y=.72, width=.32, size=18, gap=.055)
     pdf.savefig(fig); plt.close(fig)
 
     fig = slide(pdf, "Limits and conclusion", "Evidence is strong for the tested network and representation, not universal.", 11)

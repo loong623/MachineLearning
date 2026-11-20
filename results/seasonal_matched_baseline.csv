@@ -1,3 +1,5 @@
 ,representation,rows,macro_F1,accuracy
-0,daily HGB majority over four nearest seasonal snapshots,328,0.7594321052785838,0.7439024390243902
-1,seasonal HGB-tuned signature,328,0.8065114977118976,0.7926829268292683
+0,daily LR majority over four nearest seasonal snapshots,328,0.7019694798292478,0.6798780487804879
+1,daily HGB majority over four nearest seasonal snapshots,328,0.7594321052785838,0.7439024390243902
+2,seasonal HGB-tuned signature,328,0.8065114977118976,0.7926829268292683
+3,seasonal LR signature,328,0.8608042010716327,0.8567073170731707

@@ -18,7 +18,15 @@
 \newcommand{\SeasonLRAUC}{0.973}
 \newcommand{\SeasonHGBAUC}{0.943}
 \newcommand{\MatchedDaily}{0.759}
-\newcommand{\SeasonGain}{0.101}
+\newcommand{\SeasonGain}{0.047}
+\newcommand{\MatchedLR}{0.702}
+\newcommand{\SeasonLRGain}{0.159}
+\newcommand{\SeasonFoldMean}{0.850}
+\newcommand{\SeasonFoldSD}{0.085}
+\newcommand{\SeasonFoldMin}{0.680}
+\newcommand{\SeasonFoldMax}{0.975}
+\newcommand{\SeasonBootLow}{0.760}
+\newcommand{\SeasonBootHigh}{0.919}
 \newcommand{\SeasonRows}{328}
 \newcommand{\SeasonStations}{48}
 \newcommand{\SeasonCoverage}{73.6\%}
@@ -42,7 +50,7 @@
 \maketitle
 
 \begin{abstract}
-Climate labels describe long-term weather patterns, whereas the supplied Rain in Australia table records daily observations. We therefore ask how much of an externally assigned five-zone label can be recovered from weather alone when station identity and coordinates are withheld. The required daily snapshot analysis is retained as a baseline and motivation. The main feature-engineering experiment aggregates four 21-day windows around Australian equinoxes and solstices into station-year seasonal signatures. On a station-held-out protocol, the daily HGB baseline reaches macro-F1 \DailyHGB; a four-season logistic model reaches \SeasonLR, with macro-AUC \SeasonLRAUC. A matched vote over four daily snapshots reaches \MatchedDaily, so the signature improves the like-for-like station-year comparison by \SeasonGain. The result supports temporal coverage as a useful representation choice, while coverage filtering, station-year dependence, four tropical stations and one raster annotation limit external validity.
+Climate labels describe long-term weather patterns, whereas the supplied Rain in Australia table records daily observations. We therefore ask how much of an externally assigned five-zone label can be recovered from weather alone when station identity and coordinates are withheld. The required daily snapshot analysis is retained as a baseline and motivation. The main feature-engineering experiment aggregates four 21-day windows around Australian equinoxes and solstices into station-year seasonal signatures. On a station-held-out protocol, the daily HGB baseline reaches macro-F1 \DailyHGB{}; a four-season logistic model reaches \SeasonLR{}, with macro-AUC \SeasonLRAUC{}. A same-model HGB vote over four daily snapshots reaches \MatchedDaily{}, so the seasonal HGB signature improves the matched comparison by \SeasonGain{}. The corresponding daily-LR vote is \MatchedLR{}, giving a seasonal-LR improvement of \SeasonLRGain{}. The result supports temporal coverage as a useful representation choice, while coverage filtering, station-year dependence, four tropical stations and one raster annotation limit external validity.
 \end{abstract}
 
 \section{Introduction}
@@ -61,33 +69,56 @@ The seasonal representation uses four 21-day windows centred on March 20, June 2
 
 \section{Mandatory tasks}
 \subsection{Daily t-SNE visualization}
-For the required visualization, we sample 1,200 daily rows per class, impute and standardise the 20-dimensional core and fit t-SNE with perplexity 30. Sampling is label-balanced for readability; labels do not optimize the embedding. The t-SNE trustworthiness is \DailyTsneTrust and a diagnostic 10-neighbour zone purity is \DailyTsnePurity. These are descriptive local-neighbourhood measures: repeated days from one station appear in the map and no held-out prediction is claimed.
+For the required visualization, we sample 1,200 daily rows per class, impute and standardise the 20-dimensional core and fit t-SNE with perplexity 30. Sampling is label-balanced for readability; labels do not optimize the embedding. The t-SNE trustworthiness is \DailyTsneTrust{} and a diagnostic 10-neighbour zone purity is \DailyTsnePurity{}. These are descriptive local-neighbourhood measures: repeated days from one station appear in the map and no held-out prediction is claimed.
 
 \begin{figure}[t]\centering\includegraphics[width=\linewidth]{p2_tsne_main}
 \caption{Daily weather snapshot t-SNE, coloured by the five external climate groups. The plot motivates treating a day as a baseline rather than a complete climate description.}\label{fig:dailytsne}
 \end{figure}
 
 \subsection{Clustering}
-K-means and Ward agglomeration are fitted without labels. We sweep $k=2,\ldots,10$ for daily snapshots and $k=2,\ldots,7$ for seasonal signatures, reporting silhouette, Davies--Bouldin and external adjusted Rand index (ARI). The daily $k=3$ K-means ARI is \DailyClusterARI. Seasonal clustering is evaluated on the same station-year signatures; its best ARI across the sweep is \SeasonClusterARI. A separate Ward clustering of 48 monthly station profiles reaches ARI \StationClusterARI, but that changes the unit and representation and is therefore a descriptive reference.
+K-means and Ward agglomeration are fitted without labels. We sweep $k=2,\ldots,10$ for daily snapshots and $k=2,\ldots,7$ for seasonal signatures, reporting silhouette, Davies--Bouldin and external adjusted Rand index (ARI). The daily $k=3$ K-means ARI is \DailyClusterARI{}. For seasonal signatures, both internal compactness measures prefer $k=2$; the higher ARI at $k=7$ is shown only as a post-hoc comparison with the external labels. It is therefore descriptive and label-informed at the selection stage, not an unsupervised discovery of seven climate zones. A separate Ward clustering of 48 monthly station profiles reaches ARI \StationClusterARI{}, but that changes the unit and representation and is also descriptive.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{2pt}
+\caption{Daily clusters versus seasonal clusters. Seasonal internal metrics choose $k=2$; the ARI-maximising $k=7$ row is a post-hoc label comparison.}\label{tab:cluster}
+\begin{tabular}{lrrrrrr}\toprule
+Algorithm & Daily sil. & Daily ARI & Season $k$ (sil.) & Season sil. & Post-hoc $k$ & Post-hoc ARI \\ \midrule
+K-means & 0.164 & 0.098 & 2 & 0.254 & 7 & 0.314 \\
+Ward & 0.117 & 0.114 & 2 & 0.290 & 7 & 0.282 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{figure}[t]\centering\includegraphics[width=\linewidth]{p7_seasonal_clustering}
+\caption{Seasonal clustering sweep. The fits do not use labels. Internal metrics favour $k=2$; the ARI-maximising $k=7$ result is a post-hoc label comparison and is not used as an unsupervised model-selection claim.}\label{fig:seasoncluster}
+\end{figure}
+
+\subsection{Prediction and required evaluation}
+The required classifiers are multinomial logistic regression (LR) and a default decision tree (DT). We report train, test and entire-set accuracy and macro-F1 for the course-style random split, then use station-grouped outer folds for the primary estimate. The random split is intentionally easier because the same locations occur on both sides. A tuned LR, tuned DT, RF, HGB and polynomial LR are additional model classes; all probabilities are produced inside the fitting pipeline.
 
 \begin{table}[t]
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\caption{Daily clusters at $k=3$ versus the best external ARI found across the four-season signatures.}\label{tab:cluster}
-\begin{tabular}{lrrrrr}\toprule
-Algorithm & Daily sil. & Daily ARI & Season $k$ & Season sil. & Season ARI \\ \midrule
-K-means & 0.164 & 0.098 & 7 & 0.121 & 0.314 \\
-Ward & 0.117 & 0.114 & 7 & 0.106 & 0.282 \\
+\caption{Required train/test/entire metrics under the course-style random split.}\label{tab:required}
+\begin{tabular}{llrrr}\toprule
+Model & Set & Accuracy & Macro-F1 & Weighted-F1 \\ \midrule
+LR & train & 0.604 & 0.620 & 0.598 \\
+LR & test & 0.599 & 0.615 & 0.593 \\
+LR & entire & 0.602 & 0.618 & 0.597 \\
+DT & train & 1.000 & 1.000 & 1.000 \\
+DT & test & 0.652 & 0.669 & 0.652 \\
+DT & entire & 0.895 & 0.900 & 0.896 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\begin{figure}[t]\centering\includegraphics[width=\linewidth]{p7_seasonal_clustering}
-\caption{Seasonal clustering sweep. Compactness and agreement with the external label are reported separately; the external label is never supplied to the clustering fit.}\label{fig:seasoncluster}
+\begin{figure}[t]\centering\includegraphics[width=0.98\linewidth]{p4_confusion_random}
+\caption{Required random-split confusion matrices for LR and the default decision tree, including train, test and entire-set panels. The entire-set panels are descriptive because the model was fitted on the random training subset.}\label{fig:requiredcm}
 \end{figure}
-
-\subsection{Prediction and required evaluation}
-The required classifiers are multinomial logistic regression (LR) and a default decision tree (DT). We report train, test and entire-set accuracy and macro-F1 for the course-style random split, then use station-grouped outer folds for the primary estimate. The random split is intentionally easier because the same locations occur on both sides. A tuned LR, tuned DT, RF, HGB and polynomial LR are additional model classes; all probabilities are produced inside the fitting pipeline.
+\begin{figure}[t]\centering\includegraphics[width=0.98\linewidth]{p4_decision_boundary}
+\caption{Required two-feature decision-boundary illustration for the daily baseline. It is a low-dimensional visual diagnostic, not the full-feature model used for the headline scores.}\label{fig:boundary}
+\end{figure}
 
 \begin{table}[t]
 \centering
@@ -109,7 +140,22 @@ PolyLR & 0.654 & 0.642 & 0.621--0.654 & 0.654 & 0.878 \\
 \caption{Station-held-out confusion matrix for the daily baseline. Rows are true zones and columns are predictions; the uneven class support is why macro metrics accompany accuracy.}\label{fig:dailycm}
 \end{figure}
 
-Precision, recall, F1, confusion matrices and one-vs-rest ROC/AUC are computed from the same predictions. The daily HGB macro-AUC is \DailyAUC. The default tree has a much larger train/test gap than LR under the random split, illustrating why entire-set scores are not evidence of generalisation. The required discussion is:
+Precision, recall, F1, confusion matrices and one-vs-rest ROC/AUC are computed from the same predictions. The daily HGB macro-AUC is \DailyAUC{}. The default tree has a much larger train/test gap than LR under the random split, illustrating why entire-set scores are not evidence of generalisation. The following table records the held-out results after inner-fold selection of the simple tuned models; the grouped column is the more relevant transfer check.
+
+\begin{table}[t]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{Held-out results after inner-fold hyperparameter selection; tuning never uses the outer test stations.}\label{tab:validation}
+\begin{tabular}{lrrrr}\toprule
+Model & Random F1 & Grouped F1 & Random AUC & Grouped AUC \\ \midrule
+LR-tuned & 0.615 & 0.554 & 0.859 & 0.821 \\
+DT-tuned & 0.691 & 0.558 & 0.889 & 0.809 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The daily history-selection procedure also uses station-disjoint inner folds: the selected-window scores are LR \HistoryLR{} and HGB \HistoryHGB{} macro-F1. These are selected-procedure estimates, not scores chosen from the outer test folds. The required discussion is:
 
 {\small\emph{The daily weather baseline contains real but limited climate information. Under the station-held-out protocol, HGB reaches 0.659 macro-F1 and 0.883 macro-AUC, while LR reaches 0.556. The random row split is easier because the same stations occur on both sides, so it is not used as the headline estimate. The required train/test/entire-set tables show the default tree's large fit gap, whereas LR has a smaller gap. Precision, recall and F1 remain uneven: Arid and Mediterranean sites are confused most often. The four-season signature changes the unit to station-year and retains only 73.6\% of candidate years, but seasonal LR reaches 0.861 macro-F1 and 0.973 macro-AUC on held-out stations. This supports the motivation that temporal coverage matters, while the coverage filter, station-year dependence and one external label map limit how broadly the result can be generalised.}}
 
@@ -136,18 +182,18 @@ Oceanic & 78 & 108 & 0.722 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\begin{figure}[t]\centering\includegraphics[width=\linewidth]{p7_seasonal_feature_means}
-\caption{Mean seasonal feature values across the four windows. Features are computed without coordinates or station IDs; the mixed units are shown for descriptive comparison.}\label{fig:seasonfeatures}
+\begin{figure}[t]\centering\includegraphics[width=0.95\linewidth]{p7_seasonal_feature_profile}
+\caption{Seasonal feature profiles. Each row is standardised within that feature across the four windows, so pressure, temperature and rainfall do not share a misleading raw axis.}\label{fig:seasonfeatures}
 \end{figure}
 
 \subsection{Seasonal t-SNE and prediction}
-The seasonal t-SNE uses median imputation and scaling on all station-year rows for visualization only. Its zone silhouette in the embedded space is \SeasonTsneSil. Because a station contributes several years, this figure is not an independent generalisation estimate.
+The seasonal t-SNE uses median imputation and scaling on all station-year rows for visualization only. Its zone silhouette in the embedded space is \SeasonTsneSil{}. Because a station contributes several years, this figure is not an independent generalisation estimate.
 
 \begin{figure}[t]\centering\includegraphics[width=\linewidth]{p7_seasonal_tsne}
 \caption{t-SNE of four-season station-year signatures. Repeated years from one station are retained for descriptive visualization; outer prediction remains station-disjoint.}\label{fig:seasontsne}
 \end{figure}
 
-The main supervised comparison uses four station-held-out folds and three reused partition seeds. LR, tuned DT, RF and tuned HGB are fitted within each training fold; tuning uses three station-disjoint inner folds. Table~\ref{tab:season} shows the result. Seasonal LR reaches \SeasonLR macro-F1 and \SeasonLRAUC macro-AUC; tuned HGB reaches \SeasonHGB. LR's stronger result is a useful reminder that a richer representation does not require a more flexible classifier.
+The main supervised comparison uses four station-held-out folds and three reused partition seeds. LR, tuned DT, RF and tuned HGB are fitted within each training fold; tuning uses three station-disjoint inner folds. The seasonal model table below shows the result. Seasonal LR reaches \SeasonLR{} macro-F1 and \SeasonLRAUC{} macro-AUC; tuned HGB reaches \SeasonHGB{}. Across all 12 outer fold scores for LR, the mean is \SeasonFoldMean{} with SD \SeasonFoldSD{} and range \SeasonFoldMin{}--\SeasonFoldMax{}. A station-bootstrap interval conditional on the saved seed-42 predictions is \SeasonBootLow{}--\SeasonBootHigh{}; it excludes refitting and model-selection uncertainty. LR's stronger result is a useful reminder that a richer representation does not require a more flexible classifier.
 
 \begin{table}[t]
 \centering
@@ -185,15 +231,15 @@ Oceanic & 0.823 & 0.833 & 0.828 & 78 \\
 \end{tabular}
 \end{table}
 
-As a matched baseline, we take the daily HGB out-of-fold prediction nearest each of the four seasonal centres and vote across those snapshots. This vote reaches \MatchedDaily macro-F1, below the seasonal LR signature. The comparison supports the proposed mechanism: using summaries across windows adds information beyond four isolated weather snapshots, although it also changes the observation unit and discards incomplete station-years.
+As a matched baseline, we take the daily out-of-fold prediction nearest each of the four seasonal centres and vote across those snapshots. Keeping the model fixed, daily HGB reaches \MatchedDaily{} and seasonal HGB reaches \SeasonHGB{}, an increase of \SeasonGain{}. The same calculation for LR gives \MatchedLR{} for the four-snapshot vote and \SeasonLR{} for the seasonal signature, an increase of \SeasonLRGain{}. The earlier cross-model difference between seasonal LR and daily HGB is not a like-for-like comparison. The matched results support the proposed mechanism: using summaries across windows adds information beyond four isolated weather snapshots, although it also changes the observation unit and discards incomplete station-years.
 
 \subsection{History and model sensitivity}
-Trailing means over 1, 3, 7, 14, 30, 90 and 365 days remain in the notebook as a temporal-history sensitivity analysis. Nested station-held-out selection gives LR \HistoryLR and HGB \HistoryHGB macro-F1. The best fixed window differs by model and partition, so no universal observation length is claimed. Polynomial LR reaches \DailyPoly on daily inputs; RF reaches \DailyRF. The 100-km exclusion-buffer stress test lowers fixed HGB to \SpatialHGB, showing that the network-transfer problem is practically relevant. Missingness policies, feature-selection scores, fold assignments and station errors are exported in \texttt{results/}.
+Trailing means over 1, 3, 7, 14, 30, 90 and 365 days remain in the notebook as a temporal-history sensitivity analysis. Nested station-held-out selection gives LR \HistoryLR{} and HGB \HistoryHGB{} macro-F1. The best fixed window differs by model and partition, so no universal observation length is claimed. Polynomial LR reaches \DailyPoly{} on daily inputs; RF reaches \DailyRF{}. The 100-km exclusion-buffer stress test lowers fixed HGB to \SpatialHGB{}, showing that the network-transfer problem is practically relevant. Missingness policies, feature-selection scores, fold assignments and station errors are exported in \texttt{results/}.
 
 \section{Limitations and conclusion}
 Four seasonal windows are a defensible proxy for an annual weather pattern, but Köppen classes use longer climatological normals. The dataset has only 48 labelled stations, only four Tropical stations, correlated years within stations and one manually matched raster label source. The completeness filter has class-dependent coverage, and the external ARI is an interpretation aid rather than a training target. t-SNE distances and cluster ARI do not prove that a physical climate boundary has been recovered. The station-held-out split supports transfer within this station network; it does not support arbitrary Australian sites or future climate change claims.
 
-The daily experiment remains valuable as a first-impression baseline: weather snapshots contain signal but mix transient weather states. The integrated seasonal experiment provides a clearer answer to the climate question. Four-window signatures substantially improve the like-for-like daily-snapshot vote, and seasonal LR is the strongest tested model. The result is therefore a successful feature-engineering direction under the course task, with the appropriate conclusion that temporal coverage helps rather than that four dates are universally optimal.
+The daily experiment remains valuable as a first-impression baseline: weather snapshots contain signal but mix transient weather states. The integrated seasonal experiment provides a clearer answer to the climate question. Four-window signatures improve a same-model daily-snapshot vote, and seasonal LR is the strongest tested model. The result is therefore a successful feature-engineering direction under the course task, with the appropriate conclusion that temporal coverage helps rather than that four dates are universally optimal.
 
 \section*{Reproducibility}
 The executed notebook contains all code, figures and explanatory text. The final run has 122 executed cells, 48 stations, \SeasonRows{} seasonal rows and run identifier \texttt{\RunID}. Python \PythonVersion{} and pinned dependencies are recorded in the requirements file. CSV exports, predictions, fold assignments and diagnostic tables are in \texttt{results/}; the notebook code hash and raw-data hashes are recorded in \texttt{run\_manifest.json} and \texttt{environment.json}. The raw weather data are unchanged.

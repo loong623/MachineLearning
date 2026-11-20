@@ -301,6 +301,7 @@ stat(s, 8.25, 1.35, 4.1, "0.861", "seasonal LR macro-F1", C.accent1);
 stat(s, 8.25, 2.8, 4.1, "0.807", "seasonal HGB macro-F1", C.accent2);
 stat(s, 8.25, 4.25, 4.1, "0.759", "four-snapshot daily vote", C.accent4);
 s.addText(bullets(["Station-held-out folds; three reused partition seeds",
+                   "Same-model matched gains: HGB +0.047; LR +0.159",
                    "LR is strongest: richer representation does not require a more flexible model",
                    "Daily trailing-window curves remain supporting sensitivity analyses"]),
   { x: 8.25, y: 5.05, w: 4.2, h: 1.05, fontSize: 13, color: C.text1, margin: 0, paraSpaceAfter: 4, valign: "top" });

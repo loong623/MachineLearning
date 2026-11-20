@@ -56,6 +56,30 @@ daily_hgb = models.loc["HGB", "grouped_primary"]
 season_lr = season.loc["LR", "grouped_primary"]
 season_hgb = season.loc["HGB-tuned", "grouped_primary"]
 matched_daily = season_match.loc[0, "macro_F1"]
+matched_hgb = season_match.loc[1, "macro_F1"]
+matched_lr = season_match.loc[0, "macro_F1"]
+season_fold_lr = read("seasonal_fold_scores")
+season_fold_lr = season_fold_lr.loc[season_fold_lr.model == "LR", "macro_F1"]
+
+def conditional_station_bootstrap(pred_key, n=10000, seed=20261120):
+    """Conditional interval over saved station-year predictions; no refitting."""
+    import numpy as np
+    from sklearn.metrics import f1_score
+    archive = np.load(RESULT / "predictions.npz", allow_pickle=False)
+    y = archive["seasonal_y"].astype(str)
+    pred = archive[pred_key].astype(str)
+    stations = archive["seasonal_station"].astype(str)
+    labels = ["Tropical", "Arid", "Subtropical", "Mediterranean", "Oceanic"]
+    unique = np.unique(stations)
+    rng = np.random.default_rng(seed)
+    scores = []
+    for _ in range(n):
+        sampled = rng.choice(unique, size=len(unique), replace=True)
+        idx = np.concatenate([np.flatnonzero(stations == s) for s in sampled])
+        scores.append(f1_score(y[idx], pred[idx], labels=labels, average="macro", zero_division=0))
+    return np.quantile(scores, [0.025, 0.975])
+
+season_lr_boot = conditional_station_bootstrap("seasonal_LR_s42")
 
 macros = {
     "DailyHGB": f(daily_hgb), "DailyRF": f(models.loc["RF", "grouped_primary"]),
@@ -63,7 +87,11 @@ macros = {
     "SeasonLR": f(season_lr), "SeasonHGB": f(season_hgb),
     "SeasonLRAUC": f(season.loc["LR", "macro_AUC"]),
     "SeasonHGBAUC": f(season.loc["HGB-tuned", "macro_AUC"]),
-    "MatchedDaily": f(matched_daily), "SeasonGain": f(season_lr - matched_daily),
+    "MatchedDaily": f(matched_hgb), "SeasonGain": f(season_hgb - matched_hgb),
+    "MatchedLR": f(matched_lr), "SeasonLRGain": f(season_lr - matched_lr),
+    "SeasonFoldMean": f(season_fold_lr.mean()), "SeasonFoldSD": f(season_fold_lr.std(ddof=1)),
+    "SeasonFoldMin": f(season_fold_lr.min()), "SeasonFoldMax": f(season_fold_lr.max()),
+    "SeasonBootLow": f(season_lr_boot[0]), "SeasonBootHigh": f(season_lr_boot[1]),
     "SeasonRows": f'{int(manifest["seasonal_rows"]):,}',
     "SeasonStations": str(manifest["seasonal_stations"]),
     "SeasonCoverage": f(season_cov.coverage.mean() * 100, 1) + r"\%",
@@ -90,6 +118,22 @@ for name in ["LR", "DT-tuned", "RF", "HGB", "HGB-tuned", "PolyLR"]:
 daily_table = table("Daily weather baseline and model comparison. Primary is pooled station-held-out macro-F1; seed range reuses the same station network.",
                      "tab:daily", ["Model", "Primary F1", "Seed mean", "Seed range", "Station-bal.", "AUC"], daily_rows, align="lrrrrr")
 
+p4_rows = []
+for name in ["LR", "DT"]:
+    for split in ["train", "test", "entire"]:
+        r = p4.query("split == 'random' and model == @name and set == @split").iloc[0]
+        p4_rows.append([esc(name), esc(split), f(r.accuracy), f(r["macro-F1"]), f(r["weighted-F1"])])
+p4_table = table("Required train/test/entire metrics under the course-style random split.",
+                 "tab:required", ["Model", "Set", "Accuracy", "Macro-F1", "Weighted-F1"], p4_rows, align="llrrr")
+
+validation_rows = []
+for name in ["LR-tuned", "DT-tuned"]:
+    rr = p5.query("split == 'random' and model == @name").iloc[0]
+    gg = p5.query("split == 'grouped' and model == @name").iloc[0]
+    validation_rows.append([esc(name), f(rr.macro_F1), f(gg.macro_F1), f(rr.macro_AUC), f(gg.macro_AUC)])
+validation_table = table("Held-out results after inner-fold hyperparameter selection; tuning never uses the outer test stations.",
+                         "tab:validation", ["Model", "Random F1", "Grouped F1", "Random AUC", "Grouped AUC"], validation_rows, align="lrrrr")
+
 season_rows = []
 for name in ["LR", "DT-tuned", "RF", "HGB-tuned"]:
     r = season.loc[name]
@@ -101,10 +145,12 @@ season_table = table("Four-season station-year signature models. Every outer fol
 cluster_rows = []
 for alg in ["K-means", "Ward"]:
     d = daily_cluster.query("algorithm == @alg and k == 3").iloc[0]
-    s = season_cluster.query("algorithm == @alg").sort_values("ARI zone", ascending=False).iloc[0]
-    cluster_rows.append([esc(alg), f(d["silhouette"]), f(d["ARI zone"]), str(int(s.k)), f(s.silhouette), f(s["ARI zone"])])
-cluster_table = table("Daily clusters at $k=3$ versus the best external ARI found across the four-season signatures.",
-                      "tab:cluster", ["Algorithm", "Daily sil.", "Daily ARI", "Season $k$", "Season sil.", "Season ARI"], cluster_rows, align="lrrrrr")
+    internal = season_cluster.query("algorithm == @alg").sort_values("silhouette", ascending=False).iloc[0]
+    posthoc = season_cluster.query("algorithm == @alg").sort_values("ARI zone", ascending=False).iloc[0]
+    cluster_rows.append([esc(alg), f(d["silhouette"]), f(d["ARI zone"]), str(int(internal.k)), f(internal.silhouette),
+                         str(int(posthoc.k)), f(posthoc["ARI zone"])])
+cluster_table = table("Daily clusters versus seasonal clusters. Seasonal internal metrics choose $k=2$; the ARI-maximising $k=7$ row is a post-hoc label comparison.",
+                      "tab:cluster", ["Algorithm", "Daily sil.", "Daily ARI", "Season $k$ (sil.)", "Season sil.", "Post-hoc $k$", "Post-hoc ARI"], cluster_rows, align="lrrrrrr", sep=2)
 
 coverage_rows = []
 for zone, row in season_cov.iterrows():
@@ -136,6 +182,7 @@ template = (ROOT / "report/report_template.tex").read_text(encoding="utf-8-sig")
 replacements = {"@@MACROS@@": macro_text, "@@DAILY_TABLE@@": daily_table,
                 "@@SEASON_TABLE@@": season_table, "@@CLUSTER_TABLE@@": cluster_table,
                 "@@COVERAGE_TABLE@@": coverage_table, "@@CLASS_TABLE@@": class_table,
+                "@@P4_TABLE@@": p4_table, "@@VALIDATION_TABLE@@": validation_table,
                 "@@DISCUSSION@@": discussion}
 for key, value in replacements.items():
     if key not in template:
