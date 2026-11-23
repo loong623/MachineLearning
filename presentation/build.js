@@ -117,7 +117,7 @@ let s = pres.addSlide({ masterName: "TITLE_DARK", sectionTitle: "Introduction" }
 s.addText("From weather snapshots to climate signatures", { placeholder: "title" });
 s.addText("Recovering Australia's climate zones from weather observations", { placeholder: "body" });
 s.addText([{ text: "DSAA2011 Course Project · Task A · Rain in Australia dataset", options: { breakLine: true } },
-           { text: "Group 7 · MO, Zijun · QIAO, Xiaolong · WANG, Zhifei · XIA, Youyue" }],
+           { text: "Group 7 · QIAO, Xiaolong · MO, Zijun · WANG, Zhifei · XIA, Youyue" }],
   { x: 0.75, y: 5.6, w: 11.8, h: 0.9, fontSize: 18, color: "CFE3E1", margin: 0, isTextBox: true });
 notes(s, 1);
 
@@ -301,7 +301,7 @@ stat(s, 8.25, 1.35, 4.1, "0.861", "seasonal LR macro-F1", C.accent1);
 stat(s, 8.25, 2.8, 4.1, "0.807", "seasonal HGB macro-F1", C.accent2);
 stat(s, 8.25, 4.25, 4.1, "0.759", "four-snapshot daily vote", C.accent4);
 s.addText(bullets(["Station-held-out folds; three reused partition seeds",
-                   "Same-model matched gains: HGB +0.047; LR +0.159",
+                   "Within-family matched gains: HGB +0.047; LR +0.159",
                    "LR is strongest: richer representation does not require a more flexible model",
                    "Daily trailing-window curves remain supporting sensitivity analyses"]),
   { x: 8.25, y: 5.05, w: 4.2, h: 1.05, fontSize: 13, color: C.text1, margin: 0, paraSpaceAfter: 4, valign: "top" });

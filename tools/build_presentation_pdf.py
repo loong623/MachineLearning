@@ -43,7 +43,7 @@ def stat(fig, x, y, value, label, color=TEAL):
 
 
 with PdfPages(OUT) as pdf:
-    fig = slide(pdf, "From weather snapshots to seasonal climate signatures", "DSAA2011 Task A · Group 7 · MO, Zijun · QIAO, Xiaolong · WANG, Zhifei · XIA, Youyue", 1)
+    fig = slide(pdf, "From weather snapshots to seasonal climate signatures", "DSAA2011 Task A · Group 7 · QIAO, Xiaolong · MO, Zijun · WANG, Zhifei · XIA, Youyue", 1)
     fig.text(.06, .63, "How much climate-zone information can weather provide?", fontsize=25, color=TEAL, fontweight="bold")
     bullets(fig, ["A single day is the required baseline and first impression.", "Four seasonal windows form the main station-year weather signature.", "Coordinates, station IDs and target labels are withheld from predictors."], y=.49, width=.8, size=19, gap=.06)
     fig.text(.06, .08, "Rain in Australia · five external climate groups · station-held-out evaluation", fontsize=12, color=MUTED)
@@ -107,7 +107,7 @@ with PdfPages(OUT) as pdf:
 
     fig = slide(pdf, "Why the comparison is meaningful", "Representation and model flexibility are separated.", 10)
     image(fig, "p7_seasonal_tsne.png", [.06, .20, .50, .62])
-    bullets(fig, ["A daily HGB prediction nearest each seasonal centre is voted across four snapshots.", "HGB: 0.759 to 0.807 (+0.047); LR: 0.702 to 0.861 (+0.159).", "Same-model comparisons support the value of seasonal summaries.", "Seasonal t-SNE is descriptive because years repeat within stations."], x=.62, y=.72, width=.32, size=18, gap=.055)
+    bullets(fig, ["A daily HGB prediction nearest each seasonal centre is voted across four snapshots.", "HGB: 0.759 to 0.807 (+0.047); LR: 0.702 to 0.861 (+0.159).", "Within-family comparisons support the value of seasonal summaries.", "Seasonal t-SNE is descriptive because years repeat within stations."], x=.62, y=.72, width=.32, size=18, gap=.055)
     pdf.savefig(fig); plt.close(fig)
 
     fig = slide(pdf, "Limits and conclusion", "Evidence is strong for the tested network and representation, not universal.", 11)
@@ -117,7 +117,7 @@ with PdfPages(OUT) as pdf:
 
     fig = slide(pdf, "Thank you", "Questions?", 12)
     fig.text(.08, .62, "Weather snapshots → seasonal climate signatures", fontsize=28, color=TEAL, fontweight="bold")
-    fig.text(.08, .50, "Group 7 · MO, Zijun · QIAO, Xiaolong · WANG, Zhifei · XIA, Youyue", fontsize=16, color=NAVY)
+    fig.text(.08, .50, "Group 7 · QIAO, Xiaolong · MO, Zijun · WANG, Zhifei · XIA, Youyue", fontsize=16, color=NAVY)
     fig.text(.08, .38, "All code, figures, AI usage and the executed notebook are included in the project package.", fontsize=15, color=MUTED)
     pdf.savefig(fig); plt.close(fig)
 
