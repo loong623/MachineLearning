@@ -149,7 +149,7 @@ for alg in ["K-means", "Ward"]:
     posthoc = season_cluster.query("algorithm == @alg").sort_values("ARI zone", ascending=False).iloc[0]
     cluster_rows.append([esc(alg), f(d["silhouette"]), f(d["ARI zone"]), str(int(internal.k)), f(internal.silhouette),
                          str(int(posthoc.k)), f(posthoc["ARI zone"])])
-cluster_table = table("Daily clusters versus seasonal clusters. Seasonal internal metrics choose $k=2$; the ARI-maximising $k=7$ row is a post-hoc label comparison.",
+cluster_table = table("Daily and seasonal clustering comparisons. Daily K-means $k=3$ is chosen by an internal-metric and stability rule. Seasonal internal metrics prefer $k=2$; the ARI-maximising $k=7$ row is a post-hoc label comparison.",
                       "tab:cluster", ["Algorithm", "Daily sil.", "Daily ARI", "Season $k$ (sil.)", "Season sil.", "Post-hoc $k$", "Post-hoc ARI"], cluster_rows, align="lrrrrrr", sep=2)
 
 coverage_rows = []
